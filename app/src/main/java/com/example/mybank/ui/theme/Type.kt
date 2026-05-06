@@ -12,9 +12,9 @@ import com.example.mybank.R
 // 1. Perbaikan pada FontFamily (Hapus FontWeight yang dobel)
 val WorkSans = FontFamily(
     Font(R.font.work_sans, FontWeight.Normal),
-    Font(R.font.work_sans, FontWeight.Medium),    // Cukup 2 parameter
-    Font(R.font.work_sans, FontWeight.SemiBold),  // Cukup 2 parameter
-    Font(R.font.work_sans, FontWeight.Bold),      // Cukup 2 parameter
+    Font(R.font.work_sans_medium, FontWeight.Medium),    // Cukup 2 parameter
+    Font(R.font.work_sans_semibold, FontWeight.SemiBold),  // Cukup 2 parameter
+    Font(R.font.work_sans_bold, FontWeight.Bold),      // Cukup 2 parameter
     Font(R.font.work_sans_italic, FontWeight.Normal, FontStyle.Italic)
 )
 
@@ -60,7 +60,8 @@ val MyBankTypography = Typography(
     ),
     labelSmall = TextStyle(
         fontFamily = WorkSans,
-        fontWeight = FontWeight.Medium,
-        fontSize = 14.sp
+        fontWeight = FontWeight.Bold,
+        fontSize = 14.sp,
+        lineHeight = 19.sp
     )
 )

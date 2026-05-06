@@ -177,7 +177,6 @@ fun RegisterScreen() {
             Text(
                 text = "Login",
                 style = MaterialTheme.typography.labelSmall,
-                fontWeight = FontWeight.Bold,
                 color = RedMain, // Aksen merah untuk tautan
                 modifier = Modifier.clickable {
                     // TODO: Aksi navigasi kembali ke LoginScreen

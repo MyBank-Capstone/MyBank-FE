@@ -29,17 +29,14 @@ private val MyBankColorScheme = lightColorScheme(
 
 @Composable
 fun MyBankTheme(
-    // Kita paksa menggunakan Light Theme agar warna Merah & Maroon tetap konsisten di laporan
     darkTheme: Boolean = false,
-    dynamicColor: Boolean = false, // Matikan dynamic color agar DNA brand tetap terjaga
+    dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
-    // Tentukan colorScheme yang akan digunakan
     val colorScheme = if (dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
         val context = LocalContext.current
         if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
     } else {
-        // Gunakan skema warna custom MyBank yang sudah kamu buat
         MyBankColorScheme
     }
 

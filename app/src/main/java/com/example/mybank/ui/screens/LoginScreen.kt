@@ -24,10 +24,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.mybank.ui.components.MyBankTextField
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.example.mybank.ui.theme.*
 
 @Composable
-fun LoginScreen() {
+fun LoginScreen(navController: NavController) {
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
 
@@ -149,7 +151,7 @@ fun LoginScreen() {
                 fontWeight = FontWeight.Bold,
                 color = PureWhite,
                 modifier = Modifier.clickable {
-                    // TODO: Aksi navigasi pindah ke RegisterScreen
+                    navController.navigate("register")
                 }
             )
         }
@@ -193,7 +195,8 @@ fun LoginScreen() {
 @Preview
 @Composable
 fun LoginPreview() {
+    val navController = rememberNavController()
     MyBankTheme {
-        LoginScreen()
+        LoginScreen(navController = navController)
     }
 }

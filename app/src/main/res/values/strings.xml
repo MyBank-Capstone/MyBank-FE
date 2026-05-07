@@ -1,4 +1,9 @@
 <resources>
     <string name="app_name">MyBank</string>
     <string name="title_activity_login">LoginActivity</string>
+    <string name="terms_and_conditions">1. Penggunaan Layanan MyBank AI bersifat opsional.\n\n2.
+        Data transaksi akan dienkripsi secara end-to-end.\n\n3.
+        Fitur XAI (Explainable AI) memberikan transparansi atas rekomendasi menu.\n\n4.
+        MyBank tidak membagikan data pribadi Anda ke pihak ketiga tanpa izin.\n\n5.
+        Segala bentuk penyalahgunaan akun adalah tanggung jawab pengguna sepenuhnya.</string>
 </resources>

@@ -24,10 +24,8 @@ fun ResizableCard(
         modifier = modifier.fillMaxWidth(), // Lebar selalu penuh
         shape = RoundedCornerShape(cornerRadius),
         colors = CardDefaults.cardColors(containerColor = containerColor),
-        // Menambahkan elevasi tipis agar terlihat premium
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
-        // Konten di dalamnya akan menyesuaikan tinggi (wrap content) secara otomatis
         Box(modifier = Modifier.padding(20.dp)) {
             content()
         }

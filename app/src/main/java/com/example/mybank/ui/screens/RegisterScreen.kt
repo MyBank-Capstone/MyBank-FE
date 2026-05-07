@@ -1,12 +1,13 @@
 package com.example.mybank.ui.screens
 
-import android.R.attr.text
 import androidx.compose.foundation.Image
 import com.example.mybank.R
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
@@ -20,19 +21,22 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.text.style.TextAlign
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.example.mybank.ui.components.*
 import com.example.mybank.ui.theme.*
 
 @Composable
-fun RegisterScreen() {
+fun RegisterScreen(navController: NavController) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
     var isTermsChecked by remember { mutableStateOf(false) } // State untuk Checkbox
+    var showTnCDialog by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -132,7 +136,7 @@ fun RegisterScreen() {
                 .fillMaxWidth()
                 .padding(top = 16.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center // Posisi di tengah sesuai desain
+            horizontalArrangement = Arrangement.Center
         ) {
             Checkbox(
                 checked = isTermsChecked,
@@ -141,7 +145,7 @@ fun RegisterScreen() {
                     checkedColor = RedMain,
                     uncheckedColor = SubtleText
                 ),
-                modifier = Modifier.size(20.dp) // Ukuran checkbox disesuaikan
+                modifier = Modifier.size(20.dp)
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(
@@ -154,12 +158,11 @@ fun RegisterScreen() {
                 style = MaterialTheme.typography.labelSmall, // Teks bold
                 color = RedMain, // Teks merah
                 modifier = Modifier.clickable {
-                    // TODO: Tampilkan Pop-up Syarat dan Ketentuan
+                    showTnCDialog = true
                 }
             )
         }
 
-        // --- SPACER DINAMIS 3 ---
         Spacer(modifier = Modifier.weight(1f))
 
         Row(
@@ -177,9 +180,9 @@ fun RegisterScreen() {
             Text(
                 text = "Login",
                 style = MaterialTheme.typography.labelSmall,
-                color = RedMain, // Aksen merah untuk tautan
+                color = RedMain,
                 modifier = Modifier.clickable {
-                    // TODO: Aksi navigasi kembali ke LoginScreen
+                    navController.navigate("login")
                 }
             )
         }
@@ -189,13 +192,13 @@ fun RegisterScreen() {
             onClick = { /* Aksi Daftar */ },
             modifier = Modifier
                 .fillMaxWidth()
-                .height(56.dp)
+                .height(64.dp)
                 .padding(bottom = 8.dp), // Jarak aman bawah
             colors = ButtonDefaults.buttonColors(
                 containerColor = RedMain, // Background merah
                 contentColor = PureWhite // Teks putih
             ),
-            shape = RoundedCornerShape(28.dp)
+            shape = RoundedCornerShape(32.dp)
         ) {
             Text(
                 text = "DAFTAR",
@@ -204,12 +207,41 @@ fun RegisterScreen() {
             )
         }
     }
+
+    MyBankDialog(
+        showDialog = showTnCDialog,
+        onDismiss = { showTnCDialog = false },
+        title = "Syarat dan Ketentuan"
+    ) {
+        // Konten yang bisa di-scroll
+        Column(
+            modifier = Modifier
+                .weight(1f, fill = false) // fill=false agar tidak memaksa full screen jika teksnya sedikit
+                .verticalScroll(rememberScrollState())
+        ) {
+            Text(
+                text = stringResource(id = R.string.terms_and_conditions),
+                style = MaterialTheme.typography.bodySmall
+            )
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        // Tombol di luar area scroll agar selalu terlihat (sticky di bawah)
+        Button(
+            onClick = { showTnCDialog = false },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Saya Mengerti")
+        }
+    }
 }
 
 @Preview
 @Composable
 fun RegisterPreview() {
+    val navController = rememberNavController()
     MyBankTheme {
-        RegisterScreen()
+        RegisterScreen(navController = navController)
     }
 }

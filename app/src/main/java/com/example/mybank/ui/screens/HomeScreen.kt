@@ -2,11 +2,14 @@ package com.example.mybank.ui.screens
 
 import com.example.mybank.R
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.transformable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.overscroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -15,7 +18,11 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -24,6 +31,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.mybank.models.MenuFeature
 import com.example.mybank.ui.components.FeatureItem
 import com.example.mybank.ui.components.MyBankNavbar
+import com.example.mybank.ui.components.MyBankPromoCard
 import com.example.mybank.ui.components.ResizableCard
 import com.example.mybank.ui.theme.Maroon
 import com.example.mybank.ui.theme.MyBankTheme
@@ -66,6 +74,8 @@ val otherMenus = allMyBankFeatures.filterNot { it.id in favoriteIds }
 
 @Composable
 fun HomeScreen() {
+    var isAiActive by remember { mutableStateOf(true) } // AI state
+
     Scaffold(
         floatingActionButton = {
             FloatingActionButton(
@@ -73,13 +83,16 @@ fun HomeScreen() {
                 shape = CircleShape,
                 containerColor = Maroon,
                 contentColor = PureWhite,
-                // KUNCI: Gunakan offset Y untuk menurunkannya sedikit agar memotong bar
-                modifier = Modifier.size(64.dp).offset(y = 50.dp)
+                elevation = FloatingActionButtonDefaults.elevation(defaultElevation = 4.dp), // 1. Tambah Shadow
+                modifier = Modifier
+                    .size(64.dp) // Ukuran sedikit dibesarkan untuk menampung border
+                    .offset(y = 64.dp)
+                    .border(width = 4.dp, color = PureWhite, shape = CircleShape) // 2. Tambah Border Putih
             ) {
                 Icon(
-                    painter = painterResource(id = R.drawable.ic_qris),
+                    painter = painterResource(id = R.drawable.ic_qris), // Pastikan icon ada
                     contentDescription = "QRIS",
-                    modifier = Modifier.size(32.dp)
+                    modifier = Modifier.size(40.dp)
                 )
             }
         },
@@ -109,7 +122,7 @@ fun HomeScreen() {
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // Search Bar Custom (Figma-Perfect)
+
                     Row(
                         modifier = Modifier
                             .weight(1f)
@@ -151,7 +164,7 @@ fun HomeScreen() {
                         modifier = Modifier
                             .height(32.dp)
                             .background(Maroon, CircleShape)
-                            .padding(horizontal = 16.dp),
+                            .padding(horizontal = 8.dp),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.Center
                     ) {
@@ -180,12 +193,18 @@ fun HomeScreen() {
                 Spacer(modifier = Modifier.height(24.dp))
 
                 ResizableCard(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .graphicsLayer {
+                            shadowElevation = 16.dp.toPx()
+                            shape = RoundedCornerShape(24.dp)
+                            clip = false
+                        },
                     containerColor = Maroon
                 ) {
                     Column(
                         // Padding atas (top) dibuat lebih kecil dari padding bawah (bottom)
-                        modifier = Modifier.padding(start = 0.dp, end = 16.dp, top = 0.dp, bottom = 16.dp)
+                        modifier = Modifier.padding(start = 0.dp, end = 16.dp, top = 0.dp, bottom = 8.dp)
                     ) {
                         Text(
                             text = "Rekening Utama",
@@ -201,7 +220,7 @@ fun HomeScreen() {
                         ) {
                             Text(
                                 text = "Rp12.500.000,00",
-                                style = MaterialTheme.typography.titleLarge,
+                                style = MaterialTheme.typography.titleLarge.copy(fontSize = 20.sp),
                                 color = PureWhite
                             )
                             Spacer(modifier = Modifier.width(12.dp))
@@ -215,52 +234,77 @@ fun HomeScreen() {
                     }
                 }
 
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
                 ResizableCard(
-                    modifier = Modifier
-                        .height(136.dp)
-                        .fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth(),
                     containerColor = PureWhite
                 ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
+                    Column(
+                        modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text(
-                            text = if (dynamicMenus.isNotEmpty()) "Sering digunakan" else "Pin Menu",
-                            style = MaterialTheme.typography.titleMedium,
-                            color = OnyxMain
-                        )
-
-                        Surface(
-                            color = RedMain.copy(alpha = 0.1f),
-                            shape = RoundedCornerShape(16.dp),
-                            modifier = Modifier.clickable {  }
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Row(
-                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-                                verticalAlignment = Alignment.CenterVertically
+                            Text(
+                                text = if (isAiActive && dynamicMenus.isNotEmpty()) "Sering Digunakan" else "Pin Menu",
+                                style = MaterialTheme.typography.titleMedium,
+                                color = OnyxMain
+                            )
+
+                            Surface(
+                                color = RedMain.copy(alpha = 0.2f),
+                                shape = RoundedCornerShape(24.dp),
+                                modifier = Modifier.clickable {  }
                             ) {
-                                Icon(
-                                    painter = painterResource(R.drawable.ic_edit),
-                                    contentDescription = "Atur Menu",
-                                    tint = Maroon,
-                                    modifier = Modifier.size(16.dp)
-                                )
-                                Spacer(modifier = Modifier.width(4.dp))
-                                Text(
-                                    text = "Atur Menu",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    fontWeight = FontWeight.Normal,
-                                    color = OnyxMain
-                                )
+                                Row (
+                                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Icon(
+                                        painter = painterResource(R.drawable.ic_edit),
+                                        contentDescription = "Atur Menu",
+                                        tint = Maroon,
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    Text(
+                                        text = "Atur Menu",
+                                        style = MaterialTheme.typography.labelMedium, // Gunakan labelSmall agar tidak kebesaran
+                                        color = Maroon // Warna teks harus senada dengan ikon
+                                    )
+                                }
                             }
+                        }
+
+                        // KUNCI: Logika Tampilan Isi Card
+                        if (isAiActive && dynamicMenus.isNotEmpty()) {
+                            // Tampilkan Grid Menu
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                dynamicMenus.forEach { menu ->
+                                    FeatureItem(label = menu.title, iconRes = menu.iconRes)
+                                }
+                            }
+                        } else {
+                            // Tampilkan Teks Default (Personalisasi Off)
+                            Text(
+                                text = "Anda belum menambahkan menu favorit",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = SubtleText,
+                                modifier = Modifier.padding(vertical = 16.dp)
+                            )
                         }
                     }
                 }
             }
+
+            Spacer(modifier = Modifier.height(2.dp))
 
             Surface(
                 modifier = Modifier.fillMaxWidth(),
@@ -273,7 +317,7 @@ fun HomeScreen() {
 
                     otherMenus.chunked(4).forEach { rowItems ->
                         Row(
-                            modifier = Modifier.fillMaxWidth().padding(bottom = 20.dp),
+                            modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
                             rowItems.forEach { menu ->
@@ -301,8 +345,26 @@ fun HomeScreen() {
                         horizontalArrangement = Arrangement.spacedBy(16.dp),
                         contentPadding = PaddingValues(end = 24.dp)
                     ) {
-                        items(5) {
+                        items(2) { // Ganti dengan daftar promo sungguhan nanti
+                            MyBankPromoCard(
+                                title = "Terbangkan Penatmu, Andi!",
+                                description = "Tiket SAT Airways diskon up to 50%",
+                                hashtag = "#OnlyForYou",
+                                imageRes = R.drawable.img_flight_promo, // Siapkan gambarnya
+                                // KUNCI: Ukuran untuk LazyRow Beranda
+                                modifier = Modifier.width(280.dp).height(140.dp)
+                            )
 
+                            Spacer(modifier = Modifier.height(8.dp))
+
+                            // Contoh promo kedua
+                            MyBankPromoCard(
+                                title = "Waktunya Kopi Sore, Andi!",
+                                description = "Diskon spesial 30%",
+                                hashtag = "#OnlyForYou",
+                                imageRes = R.drawable.img_promo_coffee,
+                                modifier = Modifier.width(280.dp).height(140.dp)
+                            )
                         }
                     }
                 }

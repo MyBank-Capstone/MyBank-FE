@@ -51,7 +51,7 @@ fun FeatureItem(
         Spacer(modifier = Modifier.height(8.dp))
         Text(
             text = label,
-            style = MaterialTheme.typography.labelSmall,
+            style = MaterialTheme.typography.bodyMedium,
             color = OnyxMain,
             textAlign = TextAlign.Center,
             maxLines = 1 // Agar teks panjang tidak merusak grid

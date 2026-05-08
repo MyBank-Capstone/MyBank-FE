@@ -16,17 +16,24 @@ import com.example.mybank.ui.theme.* // Agar Maroon, PureWhite, OnyxMain terbaca
 @Composable
 fun ResizableCard(
     modifier: Modifier = Modifier,
-    containerColor: Color = PureWhite, // Warna default
-    cornerRadius: Dp = 24.dp,         // Radius default sesuai desain
-    content: @Composable () -> Unit    // "Slot" untuk isi kartu
+    containerColor: Color = PureWhite,
+    cornerRadius: Dp = 24.dp,
+    elevation: Dp = 8.dp,
+    content: @Composable () -> Unit
 ) {
     Card(
-        modifier = modifier.fillMaxWidth(), // Lebar selalu penuh
+        modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(cornerRadius),
-        colors = CardDefaults.cardColors(containerColor = containerColor),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        colors = CardDefaults.cardColors(
+            containerColor = containerColor
+        ),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = elevation
+        ),
     ) {
-        Box(modifier = Modifier.padding(14.dp)) {
+        Box(
+            modifier = Modifier.padding(14.dp)
+        ) {
             content()
         }
     }

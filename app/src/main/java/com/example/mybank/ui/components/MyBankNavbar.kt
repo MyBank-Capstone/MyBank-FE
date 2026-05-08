@@ -31,7 +31,7 @@ fun MyBankNavbar(
             verticalAlignment = Alignment.CenterVertically
         ) {
             // --- SISI KIRI ---
-            Row(horizontalArrangement = Arrangement.spacedBy(32.dp)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(24.dp)) {
                 BottomNavIcon(
                     label = "Beranda",
                     iconRes = R.drawable.ic_home, // Siapkan icon ini
@@ -47,10 +47,10 @@ fun MyBankNavbar(
             }
 
             // --- AREA KOSONG DI TENGAH UNTUK QRIS ---
-            Spacer(modifier = Modifier.width(48.dp))
+            Spacer(modifier = Modifier.width(56.dp))
 
             // --- SISI KANAN ---
-            Row(horizontalArrangement = Arrangement.spacedBy(32.dp)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(24.dp)) {
                 BottomNavIcon(
                     label = "Notifikasi",
                     iconRes = R.drawable.ic_notification, // Siapkan icon ini

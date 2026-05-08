@@ -9,6 +9,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.example.mybank.R // Sesuaikan dengan package kamu
+import com.example.mybank.ui.theme.Maroon
 import com.example.mybank.ui.theme.PureWhite
 import com.example.mybank.ui.theme.RedMain
 import com.example.mybank.ui.theme.SubtleText
@@ -22,7 +23,7 @@ fun MyBankNavbar(
         containerColor = PureWhite,
         contentPadding = PaddingValues(horizontal = 24.dp),
         // Menambahkan sedikit bayangan agar terpisah dari background putih
-        tonalElevation = 8.dp
+//        tonalElevation = 8.dp
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -75,7 +76,7 @@ fun BottomNavIcon(
     isActive: Boolean,
     onClick: () -> Unit
 ) {
-    val color = if (isActive) RedMain else SubtleText
+    val color = if (isActive) Maroon else SubtleText
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -90,7 +91,7 @@ fun BottomNavIcon(
         Spacer(modifier = Modifier.height(4.dp))
         Text(
             text = label,
-            style = MaterialTheme.typography.labelSmall,
+            style = MaterialTheme.typography.bodySmall,
             color = color
         )
     }

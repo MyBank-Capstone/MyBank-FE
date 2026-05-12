@@ -13,9 +13,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.compose.rememberNavController
 import com.example.mybank.R
+import com.example.mybank.ui.screens.HomeScreen
+import com.example.mybank.ui.theme.MyBankTheme
 import com.example.mybank.ui.theme.OnyxMain
 import com.example.mybank.ui.theme.PureWhite
 import com.example.mybank.ui.theme.SubtleText
@@ -114,3 +118,15 @@ fun MyBankPromoCard(
         }
     }
 }
+
+//@Preview
+//@Composable
+//fun PromoCardPreview() {
+//    MyBankPromoCard(
+//        title = "Dummy",
+//        description = "Dummy",
+//        hashtag = "#Dummy",
+//        imageRes = R.drawable.img_flight_promo,
+//        // modifier = TODO()
+//    )
+//}

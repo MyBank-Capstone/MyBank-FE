@@ -61,7 +61,7 @@ val allMyBankFeatures = listOf(
     MenuFeature("7", "Tiket", R.drawable.ic_ticket),
     MenuFeature("8", "Tarik Tunai", R.drawable.ic_cash_out),
     MenuFeature("9", "Voucher", R.drawable.ic_voucher),
-    MenuFeature("10", "Exchange", R.drawable.ic_invest),
+    MenuFeature("10", "Exchange", R.drawable.ic_exchange),
     MenuFeature("11", "Catatan", R.drawable.ic_notes),
     MenuFeature("12", "Donasi", R.drawable.ic_donation)
 )

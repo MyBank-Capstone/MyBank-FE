@@ -1,16 +1,15 @@
 package com.example.mybank.ui.screens
 
+import android.app.Activity
 import com.example.mybank.R
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.transformable
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.overscroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -21,25 +20,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.Font
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.view.WindowCompat
 import androidx.navigation.compose.rememberNavController
 import com.example.mybank.models.MenuFeature
 import com.example.mybank.models.PromoList
-import com.example.mybank.ui.components.FeatureItem
-import com.example.mybank.ui.components.MyBankNavbar
-import com.example.mybank.ui.components.MyBankPromoCard
-import com.example.mybank.ui.components.ResizableCard
-import com.example.mybank.ui.theme.Maroon
-import com.example.mybank.ui.theme.MyBankTheme
-import com.example.mybank.ui.theme.OnyxMain
-import com.example.mybank.ui.theme.PureWhite
-import com.example.mybank.ui.theme.RedMain
-import com.example.mybank.ui.theme.SubtleText
+import com.example.mybank.ui.components.*
+import com.example.mybank.ui.theme.*
 
 // 1. Simulasi Data dari Backend / AI Recommendation Engine
 // (Nanti ini diambil dari ViewModel)
@@ -98,7 +89,18 @@ val promoList = listOf(
 )
 
 @Composable
-fun HomeScreen() {
+fun HomeScreen(
+    onNavigateToPromo: () -> Unit = {}
+) {
+    val view = LocalView.current
+    if (!view.isInEditMode) {
+        // Gunakan LaunchedEffect(Unit) agar dieksekusi sekali saja saat screen aktif
+        LaunchedEffect(Unit) {
+            val window = (view.context as Activity).window
+            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = true
+        }
+    }
+
     //Switch on of area
     var isAiActive by remember { mutableStateOf(false) } // AI state
     var isBalanceVisible by remember { mutableStateOf(true) }
@@ -336,7 +338,7 @@ fun HomeScreen() {
 
             Spacer(modifier = Modifier.height(2.dp))
 
-// WHITE ZONE (Other menu, promos, etc)
+// WHITE ZONE (Other menu, promos, etc.)
             Surface(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp),
@@ -373,7 +375,11 @@ fun HomeScreen() {
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text("Promo untuk Anda", style = MaterialTheme.typography.titleMedium)
-                            Text("Lihat semua", color = RedMain, style = MaterialTheme.typography.labelSmall)
+                            Text("Lihat semua",
+                                color = RedMain,
+                                style = MaterialTheme.typography.labelSmall,
+                                modifier = Modifier.clickable { onNavigateToPromo() }
+                            )
                         }
                     }
 
@@ -408,7 +414,6 @@ fun HomeScreen() {
 @Preview
 @Composable
 fun HomePreview() {
-    val navController = rememberNavController()
     MyBankTheme {
         HomeScreen()
     }

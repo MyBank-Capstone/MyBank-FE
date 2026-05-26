@@ -23,15 +23,52 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import android.widget.Toast
+import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.mybank.ui.components.MyBankTextField
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.mybank.ui.theme.*
+import com.example.mybank.ui.viewmodels.AuthState
+import com.example.mybank.ui.viewmodels.AuthViewModel
 
 @Composable
-fun LoginScreen(navController: NavController) {
-    var username by remember { mutableStateOf("") }
+fun LoginScreen(
+    onNavigateToRegister: () -> Unit,
+    onLoginSuccess: () -> Unit,
+    navController: NavController,
+    // Panggil ViewModel ke dalam layar
+    viewModel: AuthViewModel = viewModel(),
+) {
+    val context = LocalContext.current
+
+    // Pantau (observe) perubahan status dari ViewModel
+    val authState by viewModel.authState.collectAsState()
+
+    var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+
+    // Reaksi UI berdasarkan status
+    LaunchedEffect(authState) {
+        when (authState) {
+            is AuthState.Success -> {
+                Toast.makeText(context, "Login Berhasil!", Toast.LENGTH_SHORT).show()
+                viewModel.resetState()
+
+                navController.navigate("home") {
+                    popUpTo("login")
+                }
+            }
+            is AuthState.Error -> {
+                val errorMessage = (authState as AuthState.Error).message
+                Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show()
+                viewModel.resetState()
+            }
+
+            else -> {}
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -83,8 +120,8 @@ fun LoginScreen(navController: NavController) {
         )
 
         MyBankTextField(
-            value = username,
-            onValueChange = { username = it },
+            value = email,
+            onValueChange = { email = it },
             label = "Masukkan Username", // Label dalam bisa diubah karena sudah ada label luar
             isRedMode = true
         )
@@ -151,7 +188,7 @@ fun LoginScreen(navController: NavController) {
                 fontWeight = FontWeight.Bold,
                 color = PureWhite,
                 modifier = Modifier.clickable {
-                    navController.navigate("register")
+                    onNavigateToRegister()
                 }
             )
         }
@@ -163,7 +200,9 @@ fun LoginScreen(navController: NavController) {
             verticalAlignment = Alignment.CenterVertically
         ) {
             Button(
-                onClick = { /*Login Action*/ },
+                onClick = {
+                    viewModel.login(email, password)
+                },
                 modifier = Modifier.weight(1f).height(56.dp),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = PureWhite,
@@ -179,7 +218,7 @@ fun LoginScreen(navController: NavController) {
             }
 
             IconButton(
-                onClick = { /*Action*/ },
+                onClick = { onLoginSuccess() },
                 modifier = Modifier.size(56.dp).background(PureWhite, shape = CircleShape)
             ) {
                 Icon(
@@ -192,11 +231,11 @@ fun LoginScreen(navController: NavController) {
     }
 }
 
-@Preview
-@Composable
-fun LoginPreview() {
-    val navController = rememberNavController()
-    MyBankTheme {
-        LoginScreen(navController = navController)
-    }
-}
+//@Preview
+//@Composable
+//fun LoginPreview() {
+//    val navController = rememberNavController()
+//    MyBankTheme {
+//        LoginScreen(navController = navController, )
+//    }
+//}

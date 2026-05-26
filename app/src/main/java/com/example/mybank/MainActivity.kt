@@ -19,6 +19,8 @@ import com.example.mybank.ui.screens.LoginScreen
 import com.example.mybank.ui.screens.PromoScreen
 import com.example.mybank.ui.screens.RegisterScreen
 import com.example.mybank.ui.theme.MyBankTheme
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.mybank.ui.viewmodels.AuthViewModel
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -36,6 +38,7 @@ class MainActivity : ComponentActivity() {
                     color = MaterialTheme.colorScheme.background
                 ) {
                     val navController = rememberNavController()
+                    val authViewModel: AuthViewModel = viewModel()
 
                     NavHost(
                         navController = navController,
@@ -70,8 +73,32 @@ class MainActivity : ComponentActivity() {
                             )
                         }
                     ) {
-                        composable("login") { LoginScreen(navController) }
-                        composable("register") { RegisterScreen(navController) }
+                        composable("login") {
+                            LoginScreen(
+                                onNavigateToRegister = { navController.navigate("register") },
+                                onLoginSuccess = {
+                                    // KUNCI: Pindah ke Home, lalu hancurkan rute Login dari memori
+                                    navController.navigate("home") {
+                                        popUpTo("login") { inclusive = true }
+                                    }
+                                },
+                                navController = navController,
+                                viewModel = authViewModel
+                            )
+                        }
+
+                        composable("register") {
+                            RegisterScreen(
+                                onNavigateToLogin = { navController.popBackStack() },
+                                onRegisterSuccess = {
+                                    // Setelah register sukses, arahkan kembali ke login
+                                    navController.popBackStack()
+                                },
+                                navController = navController,
+                                viewModel = authViewModel
+                            )
+                        }
+
                         composable("home") {
                             HomeScreen(
                                 onNavigateToPromo = {
@@ -81,6 +108,7 @@ class MainActivity : ComponentActivity() {
                                 }
                             )
                         }
+
                         composable("promo") {
                             PromoScreen(
                                 onBackClick = { navController.popBackStack() }

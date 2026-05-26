@@ -101,7 +101,7 @@ fun HomeScreen(
     }
 
     //Switch on of area
-    var isAiActive by remember { mutableStateOf(false) } // AI state
+    var isAiActive by remember { mutableStateOf(true) } // AI state
     var isBalanceVisible by remember { mutableStateOf(true) }
 
     Scaffold(

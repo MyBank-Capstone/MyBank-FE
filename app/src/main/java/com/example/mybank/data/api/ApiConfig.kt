@@ -1,26 +1,31 @@
 package com.example.mybank.data.api
 
-import com.example.mybank.data.api.services.AuthApiService
-import com.example.mybank.data.api.services.TransactionApiService
+import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import java.util.concurrent.TimeUnit
+import com.example.mybank.data.api.services.*
 
 object ApiConfig {
-    // Ganti dengan URL dari Swagger BE kamu
-    private const val BASE_URL = "https://api.mybank-staging.com/v1/"
+
+    private const val BASE_URL = "https://mybank-be.fly.dev/api/v1/"
 
     private fun getRetrofit(): Retrofit {
+        val client = OkHttpClient.Builder()
+            .connectTimeout(60, TimeUnit.SECONDS) // nunggu connect
+            .readTimeout(60, TimeUnit.SECONDS)    // nunggu balasan data
+            .writeTimeout(60, TimeUnit.SECONDS)   // nunggu kiriman data
+            .build()
+
+        // 2. Pasang klien tersebut ke dalam Retrofit
         return Retrofit.Builder()
             .baseUrl(BASE_URL)
+            .client(client) // KUNCI: Pasangkan OkHttpClient di sini
             .addConverterFactory(GsonConverterFactory.create())
             .build()
     }
-    // 2. Pembuatan masing-masing service secara modular (Lazy initialization)
+
     val authService: AuthApiService by lazy {
         getRetrofit().create(AuthApiService::class.java)
-    }
-
-    val transactionService: TransactionApiService by lazy {
-        getRetrofit().create(TransactionApiService::class.java)
     }
 }

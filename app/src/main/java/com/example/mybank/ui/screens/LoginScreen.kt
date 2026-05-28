@@ -112,7 +112,7 @@ fun LoginScreen(
         Spacer(modifier = Modifier.weight(1.2f))
 
         Text(
-            text = "MyBank Username",
+            text = "Email MyBank",
             modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp), // Tambah sedikit jarak ke textfield
             textAlign = TextAlign.Left,
             style = MaterialTheme.typography.bodyMedium,

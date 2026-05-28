@@ -1,11 +1,13 @@
 package com.example.mybank.ui.screens
 
+import android.widget.Toast
 import androidx.compose.animation.ExperimentalAnimationApi
 import com.example.mybank.R
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.overscroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -13,6 +15,8 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
@@ -21,6 +25,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -45,18 +51,41 @@ fun RegisterScreen(
 ) {
     // STATE UNTUK MULTI-STEP FORM
     var currentStep by remember { mutableStateOf(1) }
-1
+
     // STATE DATA REGISTRASI
     var name by remember { mutableStateOf("") }
     var dateOfBirth by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var phone by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+
+    // PEKERJAAN & DROPDOWN
     var occupation by remember { mutableStateOf("") }
+    var occupationExpanded by remember { mutableStateOf(false) }
+    val occupationList = listOf("Mahasiswa", "Pegawai Swasta", "Wiraswasta", "PNS", "Lainnya")
+
+    // CALENDAR DATE PICKER
+    val context = LocalContext.current
+    val calendar = java.util.Calendar.getInstance()
+    val datePickerDialog = android.app.DatePickerDialog(
+        context,
+        { _, year, month, dayOfMonth ->
+            // Ubah format biar selalu 2 digit 10, 09, dll
+            val formattedMonth = String.format("%02d", month + 1)
+            val formattedDay = String.format("%02d", dayOfMonth)
+            dateOfBirth = "$year-$formattedMonth-$formattedDay"
+        },
+        calendar.get(java.util.Calendar.YEAR),
+        calendar.get(java.util.Calendar.MONTH),
+        calendar.get(java.util.Calendar.DAY_OF_MONTH)
+    )
+
     var confirmPassword by remember { mutableStateOf("") }
     var isTermsChecked by remember { mutableStateOf(false) }
     var showTnCDialog by remember { mutableStateOf(false) }
-    val context = androidx.compose.ui.platform.LocalContext.current
+
+
+//    val context = androidx.compose.ui.platform.LocalContext.current
     val authState by viewModel.authState.collectAsState()
 
     // Reaksi UI - API Response
@@ -97,7 +126,7 @@ fun RegisterScreen(
                 modifier = Modifier.align(Alignment.CenterStart)
             ) {
 //                Icon(
-//                    imageVector = Icon.Default.ArrowBack,
+//                    imageVector = Icons.Default.ArrowBack,
 //                    contentDescription = "Kembali",
 //                    tint = RedMain
 //                )
@@ -162,18 +191,65 @@ fun RegisterScreen(
                 MyBankTextField(
                     value = name,
                     onValueChange = { name = it },
-                    label = "Nama Lengkap",
+                    label = "Nama sesuai KTP",
                     isRedMode = false
                 )
 
                 Spacer(modifier = Modifier.height(12.dp))
 
-                MyBankTextField(
-                    value = dateOfBirth,
-                    onValueChange = { dateOfBirth = it},
-                    label = "Tanggal Lahir",
-                    isRedMode = false
-                )
+                // DATE PICKER UNTUK TANGGAL LAHIR
+                Box(modifier = Modifier.fillMaxWidth()) {
+                    MyBankTextField(
+                        value = dateOfBirth,
+                        onValueChange = { },
+                        label = "Pilih Tanggal (YYYY-MM-DD)",
+                        isRedMode = false
+                    )
+                    Spacer(
+                        modifier = Modifier
+                            .matchParentSize()
+                            .background(Color.Transparent)
+                            .clickable { datePickerDialog.show() }
+                    )
+                }
+
+                // PEKERJAAN
+                Spacer(modifier = Modifier.height(12.dp))
+
+                // --- DROPDOWN PEKERJAAN ---
+//                Text("Pekerjaan", style = MaterialTheme.typography.bodyMedium, color = RedMain)
+                Box(modifier = Modifier.fillMaxWidth()) {
+                    MyBankTextField(
+                        value = occupation,
+                        onValueChange = { }, // Kosongkan karena diisi oleh dropdown
+                        label = "Pilih Pekerjaan Anda",
+                        isRedMode = false
+                    )
+                    // Invisible Box Penjebak Klik
+                    Spacer(
+                        modifier = Modifier
+                            .matchParentSize()
+                            .background(Color.Transparent)
+                            .clickable { occupationExpanded = true }
+                    )
+
+                    // Menu Dropdown-nya
+                    DropdownMenu(
+                        expanded = occupationExpanded,
+                        onDismissRequest = { occupationExpanded = false },
+                        modifier = Modifier.fillMaxWidth(0.85f)
+                    ) {
+                        occupationList.forEach { item ->
+                            DropdownMenuItem(
+                                text = { Text(item) },
+                                onClick = {
+                                    occupation = item
+                                    occupationExpanded = false
+                                }
+                            )
+                        }
+                    }
+                }
             }
 
             2 -> {
@@ -187,8 +263,8 @@ fun RegisterScreen(
                 )
 
                 MyBankTextField(
-                    value = name,
-                    onValueChange = { name = it },
+                    value = phone,
+                    onValueChange = { phone = it },
                     label = "Nomor HP",
                     isRedMode = false
                 )
@@ -196,8 +272,8 @@ fun RegisterScreen(
                 Spacer(modifier = Modifier.height(12.dp))
 
                 MyBankTextField(
-                    value = dateOfBirth,
-                    onValueChange = { dateOfBirth = it},
+                    value = email,
+                    onValueChange = { email = it},
                     label = "Email",
                     isRedMode = false
                 )
@@ -223,8 +299,8 @@ fun RegisterScreen(
                 Spacer(modifier = Modifier.height(12.dp))
 
                 MyBankTextField(
-                    value = password,
-                    onValueChange = { password = it},
+                    value = confirmPassword,
+                    onValueChange = { confirmPassword = it},
                     label = "Konfirmasi Password",
                     isRedMode = false
                 )
@@ -275,7 +351,7 @@ fun RegisterScreen(
             Text(
                 text = "Saya sudah punya ID",
                 style = MaterialTheme.typography.bodySmall,
-                color = OnyxMain // Karena background putih, teks ini harus gelap
+                color = OnyxMain
             )
             Text(
                 text = "Login",
@@ -293,12 +369,29 @@ fun RegisterScreen(
                 if(currentStep < 3) {
                     currentStep++
                 } else {
-                    if (password == confirmPassword) {
-                        // TODO: panggil viewModel.register(name, dateOfBirth, ...)
+                    if (password == confirmPassword && password.isNotEmpty()) {
+
+                        // Kirim data asli ke ViewModel
+                        viewModel.register(
+                            name = name,
+                            email = email,
+                            phone = phone,
+                            dateOfBirth = dateOfBirth,
+                            occupation = occupation,
+                            password = password
+                        )
+
+                    } else {
+                        Toast.makeText(context, "Password tidak cocok!", Toast.LENGTH_SHORT).show()
                     }
                 }
             },
-            enabled = if (currentStep == 3) isTermsChecked else true, // TnC hanya di step 3
+            enabled = when(currentStep) {
+                1 -> name.isNotBlank() && dateOfBirth.isNotBlank() && occupation.isNotBlank()
+                2 -> phone.isNotBlank() && email.isNotBlank()
+                3 -> isTermsChecked && password.isNotBlank() && confirmPassword.isNotBlank()
+                else -> true
+            },
 
             modifier = Modifier
                 .fillMaxWidth()

@@ -53,26 +53,36 @@ class AuthViewModel : ViewModel() {
                     _authState.value = AuthState.Error("Email atau Password salah.")
                 }
             } catch (e: Exception) {
-                // Kalau internet mati atau server backend down
+                // Tambahkan baris ini untuk mencetak error asli ke jendela Logcat di Android Studio
+                e.printStackTrace()
+                android.util.Log.e("API_ERROR", "Penyebab asli: ${e.message}")
+
                 _authState.value = AuthState.Error("Periksa koneksi internet Anda.")
             }
         }
     }
 
-    fun register(email: String, password: String) {
+    // Update parameter untuk menerima semua data dari UI
+    fun register(
+        name: String,
+        email: String,
+        phone: String,
+        dateOfBirth: String,
+        occupation: String,
+        password: String
+    ) {
         viewModelScope.launch {
             _authState.value = AuthState.Loading
 
             try {
-                // Mengisi data yang diminta backend.
-                // Karena UI MVP baru ada email & password, sisanya kita isi dummy statis dulu
+                // Masukkan data asli ke dalam cetakan Request
                 val request = RegisterRequest(
-                    name = "Pengguna Baru", // Dummy
+                    name = name,
                     email = email,
                     password = password,
-                    phone = "081234567890", // Dummy
-                    dateOfBirth = "2000-01-01", // Dummy
-                    occupation = "Mahasiswa" // Dummy
+                    phone = phone,
+                    dateOfBirth = dateOfBirth,
+                    occupation = occupation
                 )
 
                 val response = ApiConfig.authService.register(request)
@@ -83,12 +93,24 @@ class AuthViewModel : ViewModel() {
                     if (authResponse.success == true) {
                         _authState.value = AuthState.Success(authResponse)
                     } else {
-                        _authState.value = AuthState.Error(authResponse.message)
+                        _authState.value = AuthState.Error(authResponse.message ?: "Registrasi gagal")
                     }
                 } else {
-                    _authState.value = AuthState.Error("Email sudah terdaftar atau format salah.")
+                    // KUNCI DEBUGGING: Baca balasan error asli dari backend
+                    val errorBodyString = response.errorBody()?.string()
+
+                    // Cetak ke jendela Logcat dengan warna merah
+                    android.util.Log.e("API_ERROR_BODY", "HTTP Code: ${response.code()}")
+                    android.util.Log.e("API_ERROR_BODY", "Alasan Backend: $errorBodyString")
+
+                    // Munculkan di Toast sementara agar kamu bisa langsung baca di layar HP
+                    _authState.value = AuthState.Error("Ditolak BE: $errorBodyString")
                 }
             } catch (e: Exception) {
+                // Tambahkan baris ini untuk mencetak error asli ke jendela Logcat di Android Studio
+                e.printStackTrace()
+                android.util.Log.e("API_ERROR", "Penyebab asli: ${e.message}")
+
                 _authState.value = AuthState.Error("Periksa koneksi internet Anda.")
             }
         }

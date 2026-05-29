@@ -101,6 +101,8 @@ class MainActivity : ComponentActivity() {
 
                         composable("home") {
                             HomeScreen(
+                                navController = navController,
+                                // onNavigateToLogin = ,
                                 onNavigateToPromo = {
                                     navController.navigate("promo") {
                                         launchSingleTop = true

@@ -1,6 +1,8 @@
 package com.example.mybank.ui.screens
 
 import android.app.Activity
+import android.app.ProgressDialog.show
+import androidx.activity.compose.BackHandler
 import com.example.mybank.R
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -20,12 +22,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.view.WindowCompat
+import androidx.navigation.NavController
 import com.example.mybank.models.MenuFeature
 import com.example.mybank.models.PromoList
 import com.example.mybank.ui.components.*
@@ -41,7 +46,7 @@ val dynamicMenus = listOf(
 )
 // Coba ganti jadi: val dynamicMenus = emptyList<MenuFeature>() untuk melihat tampilan "Pin Menu"
 
-// 1. Definisikan semua fitur yang ada di aplikasi MyBank
+// Definisikan semua fitur yang ada di aplikasi MyBank
 val allMyBankFeatures = listOf(
     MenuFeature("1", "Top Up", R.drawable.ic_topup),
     MenuFeature("2", "Transfer", R.drawable.ic_transfer),
@@ -57,10 +62,10 @@ val allMyBankFeatures = listOf(
     MenuFeature("12", "Donasi", R.drawable.ic_donation)
 )
 
-// 2. Di dalam HomeScreen, tentukan mana yang masuk favorit (Misal hasil rekomendasi AI)
+// Di dalam HomeScreen, tentukan mana yang masuk favorit (Misal hasil rekomendasi AI)
 val favoriteIds = listOf("1", "2", "3", "4") // ID fitur yang tampil di atas
 val favoriteMenus = allMyBankFeatures.filter { it.id in favoriteIds }
-// 3. Sisanya otomatis masuk ke "Menu Lainnya"
+// Sisanya otomatis masuk ke "Menu Lainnya"
 val otherMenus = allMyBankFeatures.filterNot { it.id in favoriteIds }
 
 val promoList = listOf(
@@ -89,6 +94,8 @@ val promoList = listOf(
 
 @Composable
 fun HomeScreen(
+    navController: NavController,
+//    onNavigateToLogin: () -> Unit,
     onNavigateToPromo: () -> Unit = {}
 ) {
     val view = LocalView.current
@@ -100,9 +107,17 @@ fun HomeScreen(
         }
     }
 
+    val context = LocalContext.current
+    val activity = (context as? Activity)
+    var showLogoutDialog by remember { mutableStateOf(false) }
+
     //Switch on of area
     var isAiActive by remember { mutableStateOf(true) } // AI state
     var isBalanceVisible by remember { mutableStateOf(true) }
+
+    BackHandler(enabled = true) {
+        showLogoutDialog = true
+    }
 
     Scaffold(
         floatingActionButton = {
@@ -128,8 +143,9 @@ fun HomeScreen(
         bottomBar = {
             MyBankNavbar(currentScreen = "Beranda", onTabSelected = {})
         }
-// Content Utama
     ) { innerPadding ->
+
+// ========== CONTENT UTAMA HOMEPAGE ==========
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -214,7 +230,7 @@ fun HomeScreen(
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // 2. Greeting area
+                // GREETING AREA
                 Text("Selamat pagi,", style = MaterialTheme.typography.bodySmall, color = PureWhite)
                 Text("Andi Saputra", style = MaterialTheme.typography.titleMedium, color = PureWhite)
 
@@ -407,13 +423,55 @@ fun HomeScreen(
                 }
             }
         }
+
+// ========== LOGOUT POP UP DIALOG ==========
+        MyBankDialog(
+            showDialog = showLogoutDialog,
+            onDismiss = { showLogoutDialog = false },
+            title = "Logout"
+        ) {
+            Column(modifier = Modifier.fillMaxWidth()) {
+                Text(
+                    text = "Apakah Anda yakin untuk keluar dari MyBank?",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = OnyxMain
+                )
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.End
+                ) {
+                    TextButton(onClick = { showLogoutDialog = false }) {
+                        Text("Batal", color = SubtleText)
+                    }
+
+                    Spacer(modifier = Modifier.width(8.dp))
+
+                    Button(
+                        onClick = {
+                            showLogoutDialog = false
+                            // KUNCI: Pindah ke login dan hancurkan riwayat navigasi (Backstack)
+                            // Agar setelah di layar Login, pencet back tidak bisa masuk Home lagi
+                            navController.navigate("login") {
+                                popUpTo(0) { inclusive = true }
+                            }
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = RedMain)
+                    ) {
+                        Text("Keluar", color = PureWhite)
+                    }
+                }
+            }
+        }
     }
 }
 
-@Preview
-@Composable
-fun HomePreview() {
-    MyBankTheme {
-        HomeScreen()
-    }
-}
+//@Preview
+//@Composable
+//fun HomePreview() {
+//    MyBankTheme {
+//        HomeScreen()
+//    }
+//}

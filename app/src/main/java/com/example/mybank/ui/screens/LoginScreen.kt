@@ -218,7 +218,7 @@ fun LoginScreen(
             }
 
             IconButton(
-                onClick = { onLoginSuccess() },
+                onClick = { /* TODO Ini implement pake fingerprint, nanti lah */ },
                 modifier = Modifier.size(56.dp).background(PureWhite, shape = CircleShape)
             ) {
                 Icon(

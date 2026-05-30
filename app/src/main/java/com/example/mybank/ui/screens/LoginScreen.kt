@@ -122,7 +122,7 @@ fun LoginScreen(
         MyBankTextField(
             value = email,
             onValueChange = { email = it },
-            label = "Masukkan Username", // Label dalam bisa diubah karena sudah ada label luar
+            label = "Masukkan Email", // Label dalam bisa diubah karena sudah ada label luar
             isRedMode = true
         )
 

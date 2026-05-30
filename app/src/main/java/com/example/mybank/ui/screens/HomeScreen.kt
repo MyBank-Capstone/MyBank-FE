@@ -36,6 +36,7 @@ import com.example.mybank.data.models.PromoList
 import com.example.mybank.ui.components.*
 import com.example.mybank.ui.theme.*
 import com.example.mybank.ui.viewmodels.HomeViewModel
+import com.example.mybank.ui.viewmodels.PersonalizationViewModel
 
 // 1. Simulasi Data dari Backend / AI Recommendation Engine
 // (Nanti ini diambil dari ViewModel)
@@ -47,7 +48,6 @@ val dynamicMenus = listOf(
 )
 // Coba ganti jadi: val dynamicMenus = emptyList<MenuFeature>() untuk melihat tampilan "Pin Menu"
 
-// Definisikan semua fitur yang ada di aplikasi MyBank
 val allMyBankFeatures = listOf(
     MenuFeature("1", "Top Up", R.drawable.ic_topup),
     MenuFeature("2", "Transfer", R.drawable.ic_transfer),
@@ -69,17 +69,17 @@ val favoriteMenus = allMyBankFeatures.filter { it.id in favoriteIds }
 // Sisanya otomatis masuk ke "Menu Lainnya"
 val otherMenus = allMyBankFeatures.filterNot { it.id in favoriteIds }
 
-val promoList = listOf(
+fun getPromoList(userName: String) = listOf(
     PromoList(
         id = "p1",
-        title = "Terbangkan Penatmu, Andi!",
+        title = "Terbangkan Penatmu, $userName!",
         description = "Tiket SAT Airways diskon up to 50%",
         hashtag = "#OnlyForYou",
         imageRes = R.drawable.img_flight_promo
     ),
     PromoList(
         id = "p2",
-        title = "Waktunya Kopi Sore, Andi!",
+        title = "Waktunya Kopi Sore, $userName!",
         description = "Diskon spesial 30% di seluruh outlet",
         hashtag = "#FlashSale",
         imageRes = R.drawable.img_promo_coffee
@@ -96,33 +96,38 @@ val promoList = listOf(
 @Composable
 fun HomeScreen(
     navController: NavController,
-//    onNavigateToLogin: () -> Unit,
-    viewModel: HomeViewModel,
-    onNavigateToPromo: () -> Unit = {}
+    homeViewModel: HomeViewModel,
+    personalizationViewModel: PersonalizationViewModel,
+    onNavigateToPromo: () -> Unit = {},
+//    onNavigateToProfil: () -> Unit = {}
 ) {
     val view = LocalView.current
     if (!view.isInEditMode) {
-        // Gunakan LaunchedEffect(Unit) agar dieksekusi sekali saja saat screen aktif
         LaunchedEffect(Unit) {
             val window = (view.context as Activity).window
             WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = true
         }
     }
-
+// NOTE [DEKLARASI STATE]
     val context = LocalContext.current
     val activity = (context as? Activity)
-
-    var showLogoutDialog by remember { mutableStateOf(false) }
-    val showConsentDialog by viewModel.showConsentDialog.collectAsState()
-
-    //Switch on of area
-    var isAiActive by remember { mutableStateOf(true) } // AI state
     var isBalanceVisible by remember { mutableStateOf(true) }
+    var showLogoutDialog by remember { mutableStateOf(false) }
+    var isMenuExpanded by remember {mutableStateOf(false)}
+    val displayedOtherMenus = if (isMenuExpanded) otherMenus else otherMenus.take(8)
+    val showConsentDialog by personalizationViewModel.showConsentDialog.collectAsState()
+    val isAiActive by personalizationViewModel.isAiActive.collectAsState()
+    val userName by homeViewModel.userName.collectAsState()
+
+    // Ambil nama terbaru dari SharedPreferences saat masuk ke Home
+    LaunchedEffect(Unit) {
+        homeViewModel.refreshName()
+    }
 
     BackHandler(enabled = true) {
         showLogoutDialog = true
     }
-
+//NOTE [NAVBAR]
     Scaffold(
         floatingActionButton = {
             FloatingActionButton(
@@ -132,7 +137,7 @@ fun HomeScreen(
                 contentColor = PureWhite,
                 elevation = FloatingActionButtonDefaults.elevation(defaultElevation = 4.dp), // 1. Tambah Shadow
                 modifier = Modifier
-                    .size(64.dp) // Ukuran sedikit dibesarkan untuk menampung border
+                    .size(64.dp)
                     .offset(y = 64.dp)
                     .border(width = 4.dp, color = PureWhite, shape = CircleShape) // 2. Tambah Border Putih
             ) {
@@ -145,11 +150,19 @@ fun HomeScreen(
         },
         floatingActionButtonPosition = FabPosition.Center,
         bottomBar = {
-            MyBankNavbar(currentScreen = "Beranda", onTabSelected = {})
+            MyBankNavbar(
+                currentScreen = "home",
+                onTabSelected = { route ->
+                    navController.navigate(route) {
+                        popUpTo(navController.graph.startDestinationId) { saveState = true }
+                        launchSingleTop = true
+                        restoreState = true
+                    }
+                })
         }
     ) { innerPadding ->
 
-// ========== CONTENT UTAMA HOMEPAGE ==========
+//NOTE [CONTENT UTAMA HOMEPAGE]
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -236,7 +249,7 @@ fun HomeScreen(
 
                 // GREETING AREA
                 Text("Selamat pagi,", style = MaterialTheme.typography.bodySmall, color = PureWhite)
-                Text("Andi Saputra", style = MaterialTheme.typography.titleMedium, color = PureWhite)
+                Text(userName, style = MaterialTheme.typography.titleMedium, color = PureWhite)
 
                 Spacer(modifier = Modifier.height(24.dp))
 
@@ -357,7 +370,7 @@ fun HomeScreen(
 
             Spacer(modifier = Modifier.height(2.dp))
 
-// WHITE ZONE (Other menu, promos, etc.)
+//NOTE [WHITE ZONE]: (Other menu, promos, etc.)
             Surface(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp),
@@ -372,9 +385,11 @@ fun HomeScreen(
                         Spacer(modifier = Modifier.height(16.dp))
 
                         // Grid Menu Lainnya
-                        otherMenus.chunked(4).forEach { rowItems ->
+                        displayedOtherMenus.chunked(4).forEach { rowItems ->
                             Row(
-                                modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(bottom = 16.dp),
                                 horizontalArrangement = Arrangement.SpaceBetween
                             ) {
                                 rowItems.forEach { menu ->
@@ -382,6 +397,32 @@ fun HomeScreen(
                                 }
                                 // Menjaga grid tetap rata kiri-kanan jika baris terakhir kurang dari 4 item
                                 repeat(4 - rowItems.size) { Spacer(modifier = Modifier.width(72.dp)) }
+                            }
+                        }
+
+                        if (otherMenus.size > 8) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable { isMenuExpanded = !isMenuExpanded }
+                                    .padding(vertical = 8.dp),
+                                horizontalArrangement = Arrangement.Center,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = if (isMenuExpanded) "Tampilkan Lebih Sedikit" else "Lihat Semua Menu",
+                                    style = MaterialTheme.typography.labelMedium,
+                                    color = RedMain
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Icon(
+                                    painter = painterResource(
+                                        id = if (isMenuExpanded) R.drawable.ic_arrow_up else R.drawable.ic_arrow_down
+                                    ), // Siapkan icon panah atas/bawah kecil
+                                    contentDescription = "Toggle Menu",
+                                    tint = RedMain,
+                                    modifier = Modifier.size(16.dp)
+                                )
                             }
                         }
 
@@ -410,7 +451,7 @@ fun HomeScreen(
                         horizontalArrangement = Arrangement.spacedBy(16.dp),
                         contentPadding = PaddingValues(horizontal = 24.dp)
                     ) {
-                        items(promoList) { promo ->
+                        items(getPromoList(userName)) { promo ->
                             MyBankPromoCard(
                                 title = promo.title,
                                 description = promo.description,
@@ -428,7 +469,7 @@ fun HomeScreen(
             }
         }
 
-// ========== LOGOUT POP UP DIALOG ==========
+//NOTE [LOGOUT POP UP DIALOG]
         MyBankDialog(
             showDialog = showLogoutDialog,
             onDismiss = { showLogoutDialog = false },
@@ -473,10 +514,10 @@ fun HomeScreen(
         PersonalizationConsentDialog(
             showDialog = showConsentDialog,
             onAllow = {
-                viewModel.submitPersonalizationConsent(true)
+                personalizationViewModel.updatePersonalizationStatus(true)
             },
             onDecline = {
-                viewModel.submitPersonalizationConsent(false)
+                personalizationViewModel.updatePersonalizationStatus(false)
             }
         )
     }

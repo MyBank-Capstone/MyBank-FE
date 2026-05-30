@@ -51,11 +51,11 @@ data class User(
     @SerializedName("id")
     val id: Int,
     @SerializedName("name")
-    val name: String,
+    val name: String?,
     @SerializedName("email")
     val email: String,
     @SerializedName("phone")
-    val phone: String,
+    val phone: String?,
     @SerializedName("date_of_birth")
     val dateOfBirth: String?, // Diberi tanda '?' (nullable) untuk jaga-jaga jika BE mengirim null
     @SerializedName("occupation")

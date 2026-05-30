@@ -1,5 +1,6 @@
 package com.example.mybank.data.api
 
+import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -9,10 +10,28 @@ import com.example.mybank.data.models.PersonalizationState
 
 object ApiConfig {
 
+    // BASE URL API
     private const val BASE_URL = "https://mybank-be.fly.dev/api/v1/"
 
+    // Variabel untuk nampung token saat aplikasi jalan
+    var token: String = ""
+
     private fun getRetrofit(): Retrofit {
+        // Interceptor
+        val authInterceptor = Interceptor { chain ->
+            val req = chain.request()
+            val requestHeaders = req.newBuilder()
+                .apply {
+                    if (token.isNotEmpty()) {
+                        addHeader("Authorization", "Bearer $token")
+                    }
+                }
+                .build()
+            chain.proceed(requestHeaders)
+        }
+
         val client = OkHttpClient.Builder()
+            .addInterceptor(authInterceptor)
             .connectTimeout(60, TimeUnit.SECONDS) // nunggu connect
             .readTimeout(60, TimeUnit.SECONDS)    // nunggu balasan data
             .writeTimeout(60, TimeUnit.SECONDS)   // nunggu kiriman data

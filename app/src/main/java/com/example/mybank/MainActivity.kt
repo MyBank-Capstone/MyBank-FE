@@ -20,8 +20,10 @@ import com.example.mybank.ui.screens.PromoScreen
 import com.example.mybank.ui.screens.RegisterScreen
 import com.example.mybank.ui.theme.MyBankTheme
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.mybank.ui.screens.ProfileScreen
 import com.example.mybank.ui.viewmodels.AuthViewModel
 import com.example.mybank.ui.viewmodels.HomeViewModel
+import com.example.mybank.ui.viewmodels.PersonalizationViewModel
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -41,6 +43,7 @@ class MainActivity : ComponentActivity() {
                     val navController = rememberNavController()
                     val authViewModel: AuthViewModel = viewModel()
                     val homeViewModel: HomeViewModel = viewModel()
+                    val personalizationViewModel: PersonalizationViewModel = viewModel()
 
                     NavHost(
                         navController = navController,
@@ -104,8 +107,8 @@ class MainActivity : ComponentActivity() {
                         composable("home") {
                             HomeScreen(
                                 navController = navController,
-                                viewModel = homeViewModel,
-                                // onNavigateToLogin = ,
+                                homeViewModel = homeViewModel,
+                                personalizationViewModel = personalizationViewModel,
                                 onNavigateToPromo = {
                                     navController.navigate("promo") {
                                         launchSingleTop = true
@@ -118,6 +121,21 @@ class MainActivity : ComponentActivity() {
                             PromoScreen(
                                 onBackClick = { navController.popBackStack() }
                             )
+                        }
+
+                        composable("profile") {
+                            ProfileScreen(
+                                navController = navController,
+                                personalizationViewModel = personalizationViewModel
+                            )
+                        }
+
+                        composable("mutasi") {
+                            // Placeholder untuk layar Mutasi
+                        }
+
+                        composable("notifikasi") {
+                            // Placeholder untuk layar Notifikasi
                         }
                     }
                 }

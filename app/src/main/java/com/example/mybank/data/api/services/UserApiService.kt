@@ -8,7 +8,7 @@ import retrofit2.http.PATCH
 
 interface UserApiService {
 
-    @PATCH("user/me/personalization")
+    @PATCH("users/me/personalization")
     suspend fun setPersonalization(
         @Body request: PersonalizationState
     ): Response<AuthResponse>

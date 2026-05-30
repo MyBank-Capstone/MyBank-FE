@@ -1,7 +1,9 @@
 package com.example.mybank.ui.viewmodels
 
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.mybank.data.UserPreferencesManager
 import com.example.mybank.data.api.ApiConfig // Sesuaikan dengan nama file konfigurasimu
 import com.example.mybank.data.models.AuthResponse
 import com.example.mybank.data.models.LoginRequest
@@ -18,7 +20,9 @@ sealed class AuthState {
     data class Error(val message: String) : AuthState() // Kalau password salah/internet mati
 }
 
-class AuthViewModel : ViewModel() {
+class AuthViewModel(application: Application) : AndroidViewModel(application) {
+
+    private val prefsManager = UserPreferencesManager(application)
 
     // 2. StateFlow untuk diamati oleh UI (LoginScreen)
     private val _authState = MutableStateFlow<AuthState>(AuthState.Idle)
@@ -42,7 +46,17 @@ class AuthViewModel : ViewModel() {
                     val authResponse = response.body()!!
 
                     if (authResponse.success == true) {
+                        // Simpan Nama User ke SharedPreferences
+                        authResponse.data?.user?.name?.let {
+                            prefsManager.userName = it
+                        }
+
                         // TODO: Nanti simpan access_token ke SharedPreferences di sini
+                        authResponse.data?.accessToken?.let { token ->
+                            prefsManager.accessToken = token
+                            ApiConfig.token = token
+                        }
+
                         _authState.value = AuthState.Success(authResponse)
                     } else {
                         // Kalau format benar tapi backend bilang gagal (misal user diblokir)
@@ -91,6 +105,11 @@ class AuthViewModel : ViewModel() {
                     val authResponse = response.body()!!
 
                     if (authResponse.success == true) {
+                        // Simpan Nama User ke SharedPreferences
+                        authResponse.data?.user?.name?.let {
+                            prefsManager.userName = it
+                        }
+
                         _authState.value = AuthState.Success(authResponse)
                     } else {
                         _authState.value = AuthState.Error(authResponse.message ?: "Registrasi gagal")

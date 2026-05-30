@@ -35,14 +35,14 @@ fun MyBankNavbar(
                 BottomNavIcon(
                     label = "Beranda",
                     iconRes = R.drawable.ic_home, // Siapkan icon ini
-                    isActive = currentScreen == "Beranda",
-                    onClick = { onTabSelected("Beranda") }
+                    isActive = currentScreen == "home",
+                    onClick = { onTabSelected("home") }
                 )
                 BottomNavIcon(
                     label = "Mutasi",
                     iconRes = R.drawable.ic_history, // Siapkan icon ini
-                    isActive = currentScreen == "Mutasi",
-                    onClick = { onTabSelected("Mutasi") }
+                    isActive = currentScreen == "mutasi",
+                    onClick = { onTabSelected("mutasi") }
                 )
             }
 
@@ -54,14 +54,14 @@ fun MyBankNavbar(
                 BottomNavIcon(
                     label = "Notifikasi",
                     iconRes = R.drawable.ic_notification, // Siapkan icon ini
-                    isActive = currentScreen == "Notifikasi",
-                    onClick = { onTabSelected("Notifikasi") }
+                    isActive = currentScreen == "notifikasi",
+                    onClick = { onTabSelected("notifikasi") }
                 )
                 BottomNavIcon(
                     label = "Profil",
                     iconRes = R.drawable.ic_profile, // Siapkan icon ini
-                    isActive = currentScreen == "Profil",
-                    onClick = { onTabSelected("Profil") }
+                    isActive = currentScreen == "profile",
+                    onClick = { onTabSelected("profile") }
                 )
             }
         }

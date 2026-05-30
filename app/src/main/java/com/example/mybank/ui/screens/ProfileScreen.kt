@@ -23,25 +23,29 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.view.WindowCompat
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import com.example.mybank.R
 import com.example.mybank.ui.components.MyBankNavbar
 import com.example.mybank.ui.theme.*
+import com.example.mybank.ui.viewmodels.PersonalizationViewModel
 
 @Composable
 fun ProfileScreen(
     // Parameter navigasi bisa ditambahkan nanti di sini
+    navController: NavController,
+    personalizationViewModel: PersonalizationViewModel
 ) {
     // 1. KONTROL STATUS BAR: Memastikan teks status bar berwarna gelap di atas background putih
     val view = LocalView.current
+    val isAiActive by personalizationViewModel.isAiActive.collectAsState()
+
     if (!view.isInEditMode) {
         LaunchedEffect(Unit) {
             val window = (view.context as Activity).window
             WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = true
         }
     }
-
-    // 2. STATE INTERAKTIF: Saklar untuk fitur Personalisasi AI
-    var isAiPersonalizationEnabled by remember { mutableStateOf(true) }
 
     Scaffold(
         // Untuk sementara kita pasang Navbar statis agar tampilannya utuh seperti desain
@@ -184,8 +188,9 @@ fun ProfileScreen(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            // Bisa diklik di area baris untuk mengubah status switch
-                            .clickable { isAiPersonalizationEnabled = !isAiPersonalizationEnabled }
+                            .clickable {
+                                personalizationViewModel.updatePersonalizationStatus(!isAiActive)
+                            }
                             .padding(16.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
@@ -209,8 +214,10 @@ fun ProfileScreen(
 
                         // Switch Warna Merah Kustom
                         Switch(
-                            checked = isAiPersonalizationEnabled,
-                            onCheckedChange = { isAiPersonalizationEnabled = it },
+                            checked = isAiActive,
+                            onCheckedChange = { newValue ->
+                                personalizationViewModel.updatePersonalizationStatus(newValue)
+                            },
                             colors = SwitchDefaults.colors(
                                 checkedThumbColor = PureWhite,
                                 checkedTrackColor = RedMain,
@@ -308,6 +315,6 @@ fun SettingsMenuItem(
 @Composable
 fun ProfileScreenPreview() {
     MyBankTheme {
-        ProfileScreen()
+//        ProfileScreen()
     }
 }

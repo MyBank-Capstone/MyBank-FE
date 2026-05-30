@@ -29,13 +29,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.view.WindowCompat
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.mybank.data.models.MenuFeature
 import com.example.mybank.data.models.PromoList
 import com.example.mybank.ui.components.*
 import com.example.mybank.ui.theme.*
 import com.example.mybank.ui.viewmodels.HomeViewModel
+import com.example.mybank.ui.viewmodels.PersonalizationViewModel
 
 // 1. Simulasi Data dari Backend / AI Recommendation Engine
 // (Nanti ini diambil dari ViewModel)
@@ -69,17 +69,17 @@ val favoriteMenus = allMyBankFeatures.filter { it.id in favoriteIds }
 // Sisanya otomatis masuk ke "Menu Lainnya"
 val otherMenus = allMyBankFeatures.filterNot { it.id in favoriteIds }
 
-val promoList = listOf(
+fun getPromoList(userName: String) = listOf(
     PromoList(
         id = "p1",
-        title = "Terbangkan Penatmu, Andi!",
+        title = "Terbangkan Penatmu, $userName!",
         description = "Tiket SAT Airways diskon up to 50%",
         hashtag = "#OnlyForYou",
         imageRes = R.drawable.img_flight_promo
     ),
     PromoList(
         id = "p2",
-        title = "Waktunya Kopi Sore, Andi!",
+        title = "Waktunya Kopi Sore, $userName!",
         description = "Diskon spesial 30% di seluruh outlet",
         hashtag = "#FlashSale",
         imageRes = R.drawable.img_promo_coffee
@@ -96,8 +96,7 @@ val promoList = listOf(
 @Composable
 fun HomeScreen(
     navController: NavController,
-//    onNavigateToLogin: () -> Unit,
-    viewModel: HomeViewModel,
+    homeViewModel: HomeViewModel,
     onNavigateToPromo: () -> Unit = {}
 ) {
     val view = LocalView.current
@@ -112,12 +111,16 @@ fun HomeScreen(
     val context = LocalContext.current
     val activity = (context as? Activity)
 
-    var showLogoutDialog by remember { mutableStateOf(false) }
-    val showConsentDialog by viewModel.showConsentDialog.collectAsState()
-
-    //Switch on of area
-    var isAiActive by remember { mutableStateOf(true) } // AI state
     var isBalanceVisible by remember { mutableStateOf(true) }
+    var showLogoutDialog by remember { mutableStateOf(false) }
+    val showConsentDialog by homeViewModel.showConsentDialog.collectAsState()
+    val isAiActive by homeViewModel.isAiActive.collectAsState()
+    val userName by homeViewModel.userName.collectAsState()
+
+    // Ambil nama terbaru dari SharedPreferences saat masuk ke Home
+    LaunchedEffect(Unit) {
+        homeViewModel.refreshName()
+    }
 
     BackHandler(enabled = true) {
         showLogoutDialog = true
@@ -236,7 +239,7 @@ fun HomeScreen(
 
                 // GREETING AREA
                 Text("Selamat pagi,", style = MaterialTheme.typography.bodySmall, color = PureWhite)
-                Text("Andi Saputra", style = MaterialTheme.typography.titleMedium, color = PureWhite)
+                Text(userName, style = MaterialTheme.typography.titleMedium, color = PureWhite)
 
                 Spacer(modifier = Modifier.height(24.dp))
 
@@ -410,7 +413,7 @@ fun HomeScreen(
                         horizontalArrangement = Arrangement.spacedBy(16.dp),
                         contentPadding = PaddingValues(horizontal = 24.dp)
                     ) {
-                        items(promoList) { promo ->
+                        items(getPromoList(userName)) { promo ->
                             MyBankPromoCard(
                                 title = promo.title,
                                 description = promo.description,
@@ -473,10 +476,10 @@ fun HomeScreen(
         PersonalizationConsentDialog(
             showDialog = showConsentDialog,
             onAllow = {
-                viewModel.submitPersonalizationConsent(true)
+                homeViewModel.submitPersonalizationConsent(true)
             },
             onDecline = {
-                viewModel.submitPersonalizationConsent(false)
+                homeViewModel.submitPersonalizationConsent(false)
             }
         )
     }

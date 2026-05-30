@@ -1,48 +1,70 @@
 package com.example.mybank.ui.viewmodels
 
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.mybank.data.UserPreferencesManager
 import com.example.mybank.data.api.ApiConfig
-import com.example.mybank.data.models.PersonalizationState
+import com.example.mybank.data.models.PersonalizationState // Pastikan nama model ini sesuai di kodemu
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
-class HomeViewModel : ViewModel() {
+class HomeViewModel(application: Application) : AndroidViewModel(application) {
+    private val prefsManager = UserPreferencesManager(application)
 
-    // State untuk mengontrol apakah pop-up harus muncul atau tidak
+    // 1. STATE NAMA USER
+    private val _userName = MutableStateFlow(prefsManager.userName ?: "User")
+    val userName: StateFlow<String> = _userName
+
+    fun refreshName() {
+        _userName.value = prefsManager.userName ?: "User"
+    }
+
+    // 2. STATE AI ACTIVE (Digabung ke sini agar UI Home mudah membaca datanya)
+    private val _isAiActive = MutableStateFlow(prefsManager.isAiPersonalizationEnabled)
+    val isAiActive: StateFlow<Boolean> = _isAiActive
+
+    // 3. STATE KEMUNCULAN POP-UP CONSENT
     private val _showConsentDialog = MutableStateFlow(false)
     val showConsentDialog: StateFlow<Boolean> = _showConsentDialog
 
     init {
+        ApiConfig.token = prefsManager.accessToken ?: ""
+
         checkConsentStatus()
     }
 
     private fun checkConsentStatus() {
-        // TODO: Nanti cek dari SharedPreferences di sini.
-        // Jika belum pernah jawab -> _showConsentDialog.value = true
-        // Untuk sekarang kita set true terus agar bisa dites UI-nya:
-        _showConsentDialog.value = true
+        // KUNCI: Cek brankas. Kalau belum pernah jawab (false), maka dialog muncul (!false = true)
+        _showConsentDialog.value = !prefsManager.hasAnsweredAiConsent
     }
 
-    // Fungsi saat tombol Izinkan (true) atau Tolak (false) diklik
     fun submitPersonalizationConsent(isEnabled: Boolean) {
         viewModelScope.launch {
-            // Langsung sembunyikan pop-up agar UI terasa responsif
+            // 1. Update UI secara instan
             _showConsentDialog.value = false
+            _isAiActive.value = isEnabled
+
+            // 2. SIMPAN KE BRANKAS
+            prefsManager.hasAnsweredAiConsent = true
+            prefsManager.isAiPersonalizationEnabled = isEnabled
 
             try {
+                // 3. Tembak API
                 val request = PersonalizationState(enabled = isEnabled)
                 val response = ApiConfig.userService.setPersonalization(request)
 
                 if (response.isSuccessful) {
-                    // TODO: Simpan status "SUDAH_MENJAWAB" ke SharedPreferences
-                    // Agar besok-besok pop-up tidak muncul lagi
+                    android.util.Log.d("API_CONSENT_SUCCESS", "Data berhasil dikirim")
                 } else {
-                    // Opsional: Handle error jika gagal dikirim
+                    val errorBody = response.errorBody()?.string()
+                    android.util.Log.e("API_CONSENT_ERROR", "Code: ${response.code()}")
+                    android.util.Log.e("API_CONSENT_ERROR", "Server: $errorBody")
                 }
             } catch (e: Exception) {
-                // Opsional: Handle error koneksi internet
+                android.util.Log.e("API_CONSENT_CRASH", "Gagal mengirim data: ${e.message}")
+                e.printStackTrace()
             }
         }
     }

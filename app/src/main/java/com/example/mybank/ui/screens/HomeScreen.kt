@@ -38,14 +38,6 @@ import com.example.mybank.ui.theme.*
 import com.example.mybank.ui.viewmodels.HomeViewModel
 import com.example.mybank.ui.viewmodels.PersonalizationViewModel
 
-// 1. Simulasi Data dari Backend / AI Recommendation Engine
-// (Nanti ini diambil dari ViewModel)
-val dynamicMenus = listOf(
-    MenuFeature("1", "Top Up", R.drawable.ic_topup), // Sesuaikan id drawable-nya
-    MenuFeature("2", "Transfer", R.drawable.ic_transfer),
-    MenuFeature("3", "Tagihan", R.drawable.ic_bill),
-    MenuFeature("4", "Investasi", R.drawable.ic_invest)
-)
 // Coba ganti jadi: val dynamicMenus = emptyList<MenuFeature>() untuk melihat tampilan "Pin Menu"
 
 val allMyBankFeatures = listOf(
@@ -113,15 +105,35 @@ fun HomeScreen(
     val activity = (context as? Activity)
     var isBalanceVisible by remember { mutableStateOf(true) }
     var showLogoutDialog by remember { mutableStateOf(false) }
-    var isMenuExpanded by remember {mutableStateOf(false)}
-    val displayedOtherMenus = if (isMenuExpanded) otherMenus else otherMenus.take(8)
+
     val showConsentDialog by personalizationViewModel.showConsentDialog.collectAsState()
     val isAiActive by personalizationViewModel.isAiActive.collectAsState()
     val userName by homeViewModel.userName.collectAsState()
 
+    val dynamicMenus by homeViewModel.dynamicMenus.collectAsState()
+
+    // 1. TENTUKAN MENU FAVORIT SECARA DINAMIS
+    // Jika AI nyala, pakai dynamicMenus. Jika mati, kosongkan.
+    val currentFavorites = if (isAiActive && dynamicMenus.isNotEmpty()) {
+        dynamicMenus
+    } else {
+        emptyList()
+    }
+
+    // 2. TENTUKAN MENU LAINNYA SECARA DINAMIS
+    // Saring semua fitur yang tidak ada di currentFavorites
+    val currentOtherMenus = allMyBankFeatures.filterNot { feature ->
+        currentFavorites.any { fav -> fav.id == feature.id }
+    }
+
+    var isMenuExpanded by remember { mutableStateOf(false) }
+    // KUNCI: Gunakan currentOtherMenus, BUKAN otherMenus
+    val displayedOtherMenus = if (isMenuExpanded) currentOtherMenus else currentOtherMenus.take(8)
+
     // Ambil nama terbaru dari SharedPreferences saat masuk ke Home
     LaunchedEffect(Unit) {
-        homeViewModel.refreshName()
+        homeViewModel.refreshName() // (yang sudah ada)
+        homeViewModel.fetchTopFeatures() // TAMBAHKAN INI
     }
 
     BackHandler(enabled = true) {
@@ -352,7 +364,16 @@ fun HomeScreen(
                                 horizontalArrangement = Arrangement.SpaceBetween
                             ) {
                                 dynamicMenus.forEach { menu ->
-                                    FeatureItem(label = menu.title, iconRes = menu.iconRes)
+                                    // Di dalam HomeScreen, tempat kamu memanggil FeatureItem:
+                                    FeatureItem(
+                                        label = menu.title,
+                                        iconRes = menu.iconRes,
+                                        onClick = {
+                                            homeViewModel.trackFeatureClick(menu.title)
+                                            navController.navigate("transfer/${menu.title}")
+                                            // Nanti di sini juga kita pasang fungsi tembak POST /features/click untuk AI!
+                                        }
+                                    )
                                 }
                             }
                         } else {
@@ -378,7 +399,8 @@ fun HomeScreen(
             ) {
                 // 1. KONTAINER LUAR: Hanya pakai padding vertikal atas-bawah.
                 Column(modifier = Modifier.padding(vertical = 24.dp)) {
-
+// TODO: Expanding Menu
+                    // 2. KONTAINER DALAM: Membungkus Menu Lainnya & Header Promo.
                     // 2. KONTAINER DALAM: Membungkus Menu Lainnya & Header Promo.
                     Column(modifier = Modifier.padding(horizontal = 24.dp)) {
                         Text("Menu Lainnya", style = MaterialTheme.typography.titleMedium)
@@ -393,14 +415,22 @@ fun HomeScreen(
                                 horizontalArrangement = Arrangement.SpaceBetween
                             ) {
                                 rowItems.forEach { menu ->
-                                    FeatureItem(label = menu.title, iconRes = menu.iconRes)
+                                    FeatureItem(
+                                        label = menu.title,
+                                        iconRes = menu.iconRes,
+                                        onClick = {
+                                            homeViewModel.trackFeatureClick(menu.title)
+                                            navController.navigate("transfer/${menu.title}")
+                                        }
+                                    )
                                 }
                                 // Menjaga grid tetap rata kiri-kanan jika baris terakhir kurang dari 4 item
                                 repeat(4 - rowItems.size) { Spacer(modifier = Modifier.width(72.dp)) }
                             }
                         }
 
-                        if (otherMenus.size > 8) {
+                        // KUNCI PERBAIKAN: Gunakan currentOtherMenus.size
+                        if (currentOtherMenus.size > 8) {
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -418,7 +448,7 @@ fun HomeScreen(
                                 Icon(
                                     painter = painterResource(
                                         id = if (isMenuExpanded) R.drawable.ic_arrow_up else R.drawable.ic_arrow_down
-                                    ), // Siapkan icon panah atas/bawah kecil
+                                    ),
                                     contentDescription = "Toggle Menu",
                                     tint = RedMain,
                                     modifier = Modifier.size(16.dp)
@@ -497,8 +527,7 @@ fun HomeScreen(
                     Button(
                         onClick = {
                             showLogoutDialog = false
-                            // KUNCI: Pindah ke login dan hancurkan riwayat navigasi (Backstack)
-                            // Agar setelah di layar Login, pencet back tidak bisa masuk Home lagi
+                            homeViewModel.logout()
                             navController.navigate("login") {
                                 popUpTo(0) { inclusive = true }
                             }

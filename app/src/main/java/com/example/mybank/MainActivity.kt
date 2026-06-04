@@ -20,7 +20,12 @@ import com.example.mybank.ui.screens.PromoScreen
 import com.example.mybank.ui.screens.RegisterScreen
 import com.example.mybank.ui.theme.MyBankTheme
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavType
+import androidx.navigation.navArgument
+import com.example.mybank.ui.screens.HistoryScreen
+import com.example.mybank.ui.screens.NotificationScreen
 import com.example.mybank.ui.screens.ProfileScreen
+import com.example.mybank.ui.screens.TransferScreen
 import com.example.mybank.ui.viewmodels.AuthViewModel
 import com.example.mybank.ui.viewmodels.HomeViewModel
 import com.example.mybank.ui.viewmodels.PersonalizationViewModel
@@ -123,6 +128,14 @@ class MainActivity : ComponentActivity() {
                             )
                         }
 
+                        composable("mutasi") {
+                            HistoryScreen(navController = navController)
+                        }
+
+                        composable("notifikasi") {
+                            NotificationScreen(navController = navController)
+                        }
+
                         composable("profile") {
                             ProfileScreen(
                                 navController = navController,
@@ -130,12 +143,18 @@ class MainActivity : ComponentActivity() {
                             )
                         }
 
-                        composable("mutasi") {
-                            // Placeholder untuk layar Mutasi
-                        }
+                        composable(
+                            route = "transfer/{transactionType}", // Tambahkan penangkap variabel
+                            arguments = listOf(navArgument("transactionType") { type = NavType.StringType })
+                        ) { backStackEntry ->
+                            // Tangkap nilainya (default ke "Transfer" jika kosong)
+                            val type = backStackEntry.arguments?.getString("transactionType") ?: "Transfer"
 
-                        composable("notifikasi") {
-                            // Placeholder untuk layar Notifikasi
+                            // Lempar nilainya ke layar TransferScreen
+                            TransferScreen(
+                                navController = navController,
+                                initialType = type
+                            )
                         }
                     }
                 }

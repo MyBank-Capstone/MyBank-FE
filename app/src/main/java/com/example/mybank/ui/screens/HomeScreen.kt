@@ -38,14 +38,6 @@ import com.example.mybank.ui.theme.*
 import com.example.mybank.ui.viewmodels.HomeViewModel
 import com.example.mybank.ui.viewmodels.PersonalizationViewModel
 
-// 1. Simulasi Data dari Backend / AI Recommendation Engine
-// (Nanti ini diambil dari ViewModel)
-val dynamicMenus = listOf(
-    MenuFeature("1", "Top Up", R.drawable.ic_topup), // Sesuaikan id drawable-nya
-    MenuFeature("2", "Transfer", R.drawable.ic_transfer),
-    MenuFeature("3", "Tagihan", R.drawable.ic_bill),
-    MenuFeature("4", "Investasi", R.drawable.ic_invest)
-)
 // Coba ganti jadi: val dynamicMenus = emptyList<MenuFeature>() untuk melihat tampilan "Pin Menu"
 
 val allMyBankFeatures = listOf(
@@ -118,6 +110,8 @@ fun HomeScreen(
     val isAiActive by personalizationViewModel.isAiActive.collectAsState()
     val userName by homeViewModel.userName.collectAsState()
 
+    val dynamicMenus by homeViewModel.dynamicMenus.collectAsState()
+
     // 1. TENTUKAN MENU FAVORIT SECARA DINAMIS
     // Jika AI nyala, pakai dynamicMenus. Jika mati, kosongkan.
     val currentFavorites = if (isAiActive && dynamicMenus.isNotEmpty()) {
@@ -138,7 +132,8 @@ fun HomeScreen(
 
     // Ambil nama terbaru dari SharedPreferences saat masuk ke Home
     LaunchedEffect(Unit) {
-        homeViewModel.refreshName()
+        homeViewModel.refreshName() // (yang sudah ada)
+        homeViewModel.fetchTopFeatures() // TAMBAHKAN INI
     }
 
     BackHandler(enabled = true) {
@@ -369,7 +364,16 @@ fun HomeScreen(
                                 horizontalArrangement = Arrangement.SpaceBetween
                             ) {
                                 dynamicMenus.forEach { menu ->
-                                    FeatureItem(label = menu.title, iconRes = menu.iconRes)
+                                    // Di dalam HomeScreen, tempat kamu memanggil FeatureItem:
+                                    FeatureItem(
+                                        label = menu.title,
+                                        iconRes = menu.iconRes,
+                                        onClick = {
+                                            homeViewModel.trackFeatureClick(menu.title)
+                                            navController.navigate("transfer/${menu.title}")
+                                            // Nanti di sini juga kita pasang fungsi tembak POST /features/click untuk AI!
+                                        }
+                                    )
                                 }
                             }
                         } else {
@@ -411,7 +415,14 @@ fun HomeScreen(
                                 horizontalArrangement = Arrangement.SpaceBetween
                             ) {
                                 rowItems.forEach { menu ->
-                                    FeatureItem(label = menu.title, iconRes = menu.iconRes)
+                                    FeatureItem(
+                                        label = menu.title,
+                                        iconRes = menu.iconRes,
+                                        onClick = {
+                                            homeViewModel.trackFeatureClick(menu.title)
+                                            navController.navigate("transfer/${menu.title}")
+                                        }
+                                    )
                                 }
                                 // Menjaga grid tetap rata kiri-kanan jika baris terakhir kurang dari 4 item
                                 repeat(4 - rowItems.size) { Spacer(modifier = Modifier.width(72.dp)) }
@@ -516,8 +527,7 @@ fun HomeScreen(
                     Button(
                         onClick = {
                             showLogoutDialog = false
-                            // KUNCI: Pindah ke login dan hancurkan riwayat navigasi (Backstack)
-                            // Agar setelah di layar Login, pencet back tidak bisa masuk Home lagi
+                            homeViewModel.logout()
                             navController.navigate("login") {
                                 popUpTo(0) { inclusive = true }
                             }

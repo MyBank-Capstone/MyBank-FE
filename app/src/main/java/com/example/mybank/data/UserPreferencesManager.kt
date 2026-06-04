@@ -10,8 +10,14 @@ class UserPreferencesManager(context: Context) {
         private const val KEY_AI_PERSONALIZATION = "is_ai_personalization_enabled"
         private const val KEY_HAS_ANSWERED_CONSENT = "has_answered_ai_consent"
         private const val KEY_USER_NAME = "user_name"
+        private const val KEY_USER_ID = "user_id"
         private const val KEY_ACCESS_TOKEN = "access_token"
     }
+
+    // Menyimpan dan mengambil ID User
+    var userId: Int
+        get() = prefs.getInt(KEY_USER_ID, -1)
+        set(value) = prefs.edit().putInt(KEY_USER_ID, value).apply()
 
     // Menyimpan access token
     var accessToken: String?
@@ -38,6 +44,7 @@ class UserPreferencesManager(context: Context) {
         prefs.edit()
             .remove(KEY_ACCESS_TOKEN)
             .remove(KEY_USER_NAME)
+            .remove(KEY_USER_ID)
             .apply()
     }
 }

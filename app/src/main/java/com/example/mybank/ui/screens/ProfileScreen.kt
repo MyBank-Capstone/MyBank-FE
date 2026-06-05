@@ -1,6 +1,7 @@
 package com.example.mybank.ui.screens
 
 import android.app.Activity
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -45,6 +46,13 @@ fun ProfileScreen(
         LaunchedEffect(Unit) {
             val window = (view.context as Activity).window
             WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = true
+        }
+    }
+
+    // KUNCI POIN 3: Cegah lompat ke login, paksa kembali ke Home
+    BackHandler {
+        navController.navigate("home") {
+            popUpTo("home") { inclusive = true }
         }
     }
 

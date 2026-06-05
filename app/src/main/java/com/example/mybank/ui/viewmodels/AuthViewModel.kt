@@ -46,6 +46,11 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
                     val authResponse = response.body()!!
 
                     if (authResponse.success == true) {
+                        // Simpan ID User ke SharedPreferences
+                        authResponse.data?.user?.id?.let {
+                            prefsManager.userId = it
+                        }
+
                         // Simpan Nama User ke SharedPreferences
                         authResponse.data?.user?.name?.let {
                             prefsManager.userName = it
@@ -105,6 +110,11 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
                     val authResponse = response.body()!!
 
                     if (authResponse.success == true) {
+                        // Simpan ID User ke SharedPreferences
+                        authResponse.data?.user?.id?.let {
+                            prefsManager.userId = it
+                        }
+
                         // Simpan Nama User ke SharedPreferences
                         authResponse.data?.user?.name?.let {
                             prefsManager.userName = it

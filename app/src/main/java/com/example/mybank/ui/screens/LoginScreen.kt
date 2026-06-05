@@ -57,7 +57,8 @@ fun LoginScreen(
                 viewModel.resetState()
 
                 navController.navigate("home") {
-                    popUpTo("login")
+                    popUpTo("login") { inclusive = true }
+                    launchSingleTop = true
                 }
             }
             is AuthState.Error -> {

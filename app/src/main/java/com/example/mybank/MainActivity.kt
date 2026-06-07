@@ -29,6 +29,7 @@ import com.example.mybank.ui.screens.TransferScreen
 import com.example.mybank.ui.viewmodels.AuthViewModel
 import com.example.mybank.ui.viewmodels.HomeViewModel
 import com.example.mybank.ui.viewmodels.PersonalizationViewModel
+import com.example.mybank.ui.viewmodels.RecommendationViewModel
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -49,6 +50,7 @@ class MainActivity : ComponentActivity() {
                     val authViewModel: AuthViewModel = viewModel()
                     val homeViewModel: HomeViewModel = viewModel()
                     val personalizationViewModel: PersonalizationViewModel = viewModel()
+                    val recommendationViewModel: RecommendationViewModel = viewModel()
 
                     NavHost(
                         navController = navController,
@@ -114,6 +116,7 @@ class MainActivity : ComponentActivity() {
                                 navController = navController,
                                 homeViewModel = homeViewModel,
                                 personalizationViewModel = personalizationViewModel,
+                                recommendationViewModel = recommendationViewModel,
                                 onNavigateToPromo = {
                                     navController.navigate("promo") {
                                         launchSingleTop = true
@@ -124,6 +127,7 @@ class MainActivity : ComponentActivity() {
 
                         composable("promo") {
                             PromoScreen(
+                                recommendationViewModel = recommendationViewModel,
                                 onBackClick = { navController.popBackStack() }
                             )
                         }

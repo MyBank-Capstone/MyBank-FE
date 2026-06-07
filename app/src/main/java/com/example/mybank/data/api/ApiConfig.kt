@@ -8,6 +8,7 @@ import java.util.concurrent.TimeUnit
 import com.example.mybank.data.api.services.*
 import com.example.mybank.data.models.PersonalizationState
 import com.example.mybank.ui.components.TransactionItem
+import kotlin.jvm.java
 
 object ApiConfig {
 
@@ -60,5 +61,9 @@ object ApiConfig {
 
     val featureService: FeatureApiService by lazy {
         getRetrofit().create(FeatureApiService::class.java)
+    }
+
+    val recommendationService: RecommendationApiService by lazy {
+        getRetrofit().create(RecommendationApiService::class.java)
     }
 }

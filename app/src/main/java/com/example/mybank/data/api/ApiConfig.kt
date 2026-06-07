@@ -7,6 +7,8 @@ import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
 import com.example.mybank.data.api.services.*
 import com.example.mybank.data.models.PersonalizationState
+import com.example.mybank.ui.components.TransactionItem
+import kotlin.jvm.java
 
 object ApiConfig {
 
@@ -51,5 +53,17 @@ object ApiConfig {
 
     val userService: UserApiService by lazy {
         getRetrofit().create(UserApiService::class.java)
+    }
+
+    val transactionService: TransactionApiService by lazy {
+        getRetrofit().create(TransactionApiService::class.java)
+    }
+
+    val featureService: FeatureApiService by lazy {
+        getRetrofit().create(FeatureApiService::class.java)
+    }
+
+    val recommendationService: RecommendationApiService by lazy {
+        getRetrofit().create(RecommendationApiService::class.java)
     }
 }

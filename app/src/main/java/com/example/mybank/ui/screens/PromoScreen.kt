@@ -28,9 +28,11 @@ import androidx.navigation.compose.rememberNavController
 import com.example.mybank.data.models.PromoList
 import com.example.mybank.ui.components.*
 import com.example.mybank.ui.theme.*
+import com.example.mybank.ui.viewmodels.RecommendationViewModel
 
 @Composable
 fun PromoScreen(
+    recommendationViewModel: RecommendationViewModel,
     onBackClick: () -> Unit
 ) {
     val view = LocalView.current
@@ -46,11 +48,11 @@ fun PromoScreen(
     var showXaiDialog by remember { mutableStateOf(false) }
 
     // Simulasi daftar promo dari API (menggunakan model Promo yang sama dengan Beranda)
-    val promoList = listOf(
-        PromoList("p1", "Waktunya Kopi Sore, Andi!", "Diskon spesial 30%", "#OnlyForYou", R.drawable.img_promo_coffee),
-        PromoList("p2", "Terbangkan Penatmu, Andi!", "Diskon spesial 30%", "#OnlyForYou", R.drawable.img_flight_promo),
-        PromoList("p3", "Liburan lagi ke Lombok!", "Liburan hemat dengan MY BANK.", "#OnlyForYou", R.drawable.img_promo_vacation)
-    )
+    val recommendations by recommendationViewModel.recommendations.collectAsState()
+
+    LaunchedEffect(Unit) {
+        recommendationViewModel.fetchRecommendations()
+    }
 
     Scaffold(
         topBar = {
@@ -102,16 +104,16 @@ fun PromoScreen(
                     )
 
                     //Tombol Info (Pemicu Pop-up XAI)
-                    IconButton(
-                        onClick = { showXaiDialog = true },
-                        modifier = Modifier.size(24.dp)
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_info), // Sesuaikan id drawable (i)
-                            contentDescription = "Penjelasan Rekomendasi",
-                            tint = RedMain
-                        )
-                    }
+//                    IconButton(
+//                        onClick = { showXaiDialog = true },
+//                        modifier = Modifier.size(24.dp)
+//                    ) {
+//                        Icon(
+//                            painter = painterResource(id = R.drawable.ic_info), // Sesuaikan id drawable (i)
+//                            contentDescription = "Penjelasan Rekomendasi",
+//                            tint = RedMain
+//                        )
+//                    }
                 }
             }
         }
@@ -128,72 +130,79 @@ fun PromoScreen(
             // KUNCI: Memberikan jarak rapi 16.dp antar card promo secara otomatis
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            items(promoList, key = { it.id }) { promo ->
+            items(recommendations, key = { it.id }) { recommendations ->
                 MyBankPromoCard(
-                    title = promo.title,
-                    description = promo.description,
-                    hashtag = promo.hashtag,
-                    imageRes = promo.imageRes,
+                    title = recommendations.title ?: "Rekomendasi",
+                    description = recommendations.description ?: "",
+                    hashtag = "#UntukAnda", // Bisa diubah tergantung type
+                    // Karena dari backend imageUrl kosong, kita pakai gambar default dari lokal dulu
+                    imageRes = R.drawable.img_flight_promo,
                     // KUNCI REUSABILITY: Cukup lemparkan fillMaxWidth() agar merentang penuh
-                    modifier = Modifier.fillMaxWidth().height(140.dp)
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(140.dp)
+                        .clickable {
+                            // LAPOR KE AI SAAT DIKLIK!
+                            recommendationViewModel.trackPromoClick(recommendations.id)
+                        }
                 )
             }
         }
 
         // POP-UP XAI (Menggunakan Wadah Reusable MyBankDialog)
-        MyBankDialog(
-            showDialog = showXaiDialog,
-            onDismiss = { showXaiDialog = false }
-        ) {
-            // Header Pop-up
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Spacer(modifier = Modifier.width(24.dp)) // Penyeimbang agar judul di tengah
-
-                Text(
-                    text = "Mengapa Saya melihat ini?",
-                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                    color = Maroon
-                )
-
-                IconButton(
-                    onClick = { showXaiDialog = false },
-                    modifier = Modifier.size(24.dp)
-                ) {
-                    Icon(
-                        painter = painterResource(R.drawable.ic_dismiss),
-                        contentDescription = "Tutup",
-                        tint = Maroon
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Isi Penjelasan XAI
-            Column(
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-                modifier = Modifier.padding(horizontal = 8.dp)
-            ) {
-                XaiPointItem(
-                    title = "1. Riwayat Transaksi:",
-                    description = "Kamu telah melakukan 3 kali pembelian tiket pesawat dalam 6 bulan terakhir."
-                )
-                XaiPointItem(
-                    title = "2. Kategori Favorit:",
-                    description = "40% pengeluaranmu bulan ini ada pada kategori Travel & Leisure."
-                )
-                XaiPointItem(
-                    title = "3. Pola Waktu:",
-                    description = "Kamu sering mencari inspirasi liburan di aplikasi MyBank pada akhir pekan."
-                )
-            }
-
-            Spacer(modifier = Modifier.height(8.dp))
-        }
+//        MyBankDialog(
+//            showDialog = showXaiDialog,
+//            onDismiss = { showXaiDialog = false }
+//        ) {
+//            // Header Pop-up
+//            Row(
+//                modifier = Modifier.fillMaxWidth(),
+//                horizontalArrangement = Arrangement.SpaceBetween,
+//                verticalAlignment = Alignment.CenterVertically
+//            ) {
+//                Spacer(modifier = Modifier.width(24.dp)) // Penyeimbang agar judul di tengah
+//
+//                Text(
+//                    text = "Mengapa Saya melihat ini?",
+//                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+//                    color = Maroon
+//                )
+//
+//                IconButton(
+//                    onClick = { showXaiDialog = false },
+//                    modifier = Modifier.size(24.dp)
+//                ) {
+//                    Icon(
+//                        painter = painterResource(R.drawable.ic_dismiss),
+//                        contentDescription = "Tutup",
+//                        tint = Maroon
+//                    )
+//                }
+//            }
+//
+//            Spacer(modifier = Modifier.height(16.dp))
+//
+//            // Isi Penjelasan XAI
+//            Column(
+//                verticalArrangement = Arrangement.spacedBy(12.dp),
+//                modifier = Modifier.padding(horizontal = 8.dp)
+//            ) {
+//                XaiPointItem(
+//                    title = "1. Riwayat Transaksi:",
+//                    description = "Kamu telah melakukan 3 kali pembelian tiket pesawat dalam 6 bulan terakhir."
+//                )
+//                XaiPointItem(
+//                    title = "2. Kategori Favorit:",
+//                    description = "40% pengeluaranmu bulan ini ada pada kategori Travel & Leisure."
+//                )
+//                XaiPointItem(
+//                    title = "3. Pola Waktu:",
+//                    description = "Kamu sering mencari inspirasi liburan di aplikasi MyBank pada akhir pekan."
+//                )
+//            }
+//
+//            Spacer(modifier = Modifier.height(8.dp))
+//        }
     }
 }
 
@@ -213,14 +222,4 @@ fun XaiPointItem(title: String, description: String) {
         style = MaterialTheme.typography.bodySmall,
         lineHeight = 18.sp
     )
-}
-
-@Preview
-@Composable
-fun PromoPreview() {
-    val navController = rememberNavController()
-    MyBankTheme {
-        PromoScreen(){
-        }
-    }
 }

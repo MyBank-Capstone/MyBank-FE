@@ -37,6 +37,7 @@ import com.example.mybank.ui.components.*
 import com.example.mybank.ui.theme.*
 import com.example.mybank.ui.viewmodels.HomeViewModel
 import com.example.mybank.ui.viewmodels.PersonalizationViewModel
+import com.example.mybank.ui.viewmodels.RecommendationViewModel
 
 // Coba ganti jadi: val dynamicMenus = emptyList<MenuFeature>() untuk melihat tampilan "Pin Menu"
 
@@ -90,6 +91,7 @@ fun HomeScreen(
     navController: NavController,
     homeViewModel: HomeViewModel,
     personalizationViewModel: PersonalizationViewModel,
+    recommendationViewModel: RecommendationViewModel,
     onNavigateToPromo: () -> Unit = {},
 //    onNavigateToProfil: () -> Unit = {}
 ) {
@@ -111,6 +113,7 @@ fun HomeScreen(
     val userName by homeViewModel.userName.collectAsState()
 
     val dynamicMenus by homeViewModel.dynamicMenus.collectAsState()
+    val recommendations by recommendationViewModel.recommendations.collectAsState()
 
     // 1. TENTUKAN MENU FAVORIT SECARA DINAMIS
     // Jika AI nyala, pakai dynamicMenus. Jika mati, kosongkan.
@@ -132,8 +135,9 @@ fun HomeScreen(
 
     // Ambil nama terbaru dari SharedPreferences saat masuk ke Home
     LaunchedEffect(Unit) {
-        homeViewModel.refreshName() // (yang sudah ada)
-        homeViewModel.fetchTopFeatures() // TAMBAHKAN INI
+        homeViewModel.refreshName()
+        homeViewModel.fetchTopFeatures()
+        recommendationViewModel.fetchRecommendations()
     }
 
     BackHandler(enabled = true) {
@@ -481,13 +485,20 @@ fun HomeScreen(
                         horizontalArrangement = Arrangement.spacedBy(16.dp),
                         contentPadding = PaddingValues(horizontal = 24.dp)
                     ) {
-                        items(getPromoList(userName)) { promo ->
+                        items(recommendations) { recommendations ->
                             MyBankPromoCard(
-                                title = promo.title,
-                                description = promo.description,
-                                hashtag = promo.hashtag,
-                                imageRes = promo.imageRes,
-                                modifier = Modifier.width(280.dp).height(140.dp)
+                                title = recommendations.title ?: "Rekomendasi",
+                                description = recommendations.description ?: "",
+                                hashtag = "#UntukAnda", // Bisa diubah tergantung type
+                                // Karena dari backend imageUrl kosong, kita pakai gambar default dari lokal dulu
+                                imageRes = R.drawable.img_flight_promo,
+                                modifier = Modifier
+                                    .width(280.dp)
+                                    .height(140.dp)
+                                    .clickable {
+                                        // LAPOR KE AI SAAT DIKLIK!
+                                        recommendationViewModel.trackPromoClick(recommendations.id)
+                                    }
                             )
                         }
                     }

@@ -8,6 +8,8 @@ import com.example.mybank.data.UserPreferencesManager
 import com.example.mybank.data.api.ApiConfig
 import com.example.mybank.data.models.FeatureClickRequest
 import com.example.mybank.data.models.MenuFeature
+import com.example.mybank.data.models.ReasonData
+import com.example.mybank.data.models.Recommendation
 import com.example.mybank.ui.screens.allMyBankFeatures
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

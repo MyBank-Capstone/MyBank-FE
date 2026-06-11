@@ -24,15 +24,11 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.view.WindowCompat
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.mybank.data.models.MenuFeature
-import com.example.mybank.data.models.PromoList
 import com.example.mybank.ui.components.*
 import com.example.mybank.ui.theme.*
 import com.example.mybank.ui.viewmodels.HomeViewModel
@@ -61,30 +57,6 @@ val favoriteIds = listOf("1", "2", "3", "4") // ID fitur yang tampil di atas
 val favoriteMenus = allMyBankFeatures.filter { it.id in favoriteIds }
 // Sisanya otomatis masuk ke "Menu Lainnya"
 val otherMenus = allMyBankFeatures.filterNot { it.id in favoriteIds }
-
-fun getPromoList(userName: String) = listOf(
-    PromoList(
-        id = "p1",
-        title = "Terbangkan Penatmu, $userName!",
-        description = "Tiket SAT Airways diskon up to 50%",
-        hashtag = "#OnlyForYou",
-        imageRes = R.drawable.img_flight_promo
-    ),
-    PromoList(
-        id = "p2",
-        title = "Waktunya Kopi Sore, $userName!",
-        description = "Diskon spesial 30% di seluruh outlet",
-        hashtag = "#FlashSale",
-        imageRes = R.drawable.img_promo_coffee
-    ),
-    PromoList(
-        id = "p3",
-        title = "Burger Streak Spesial",
-        description = "Beli 1 Gratis 1 khusus pengguna MyBank",
-        hashtag = "#WeekendPromo",
-        imageRes = R.drawable.img_flight_promo
-    )
-)
 
 @Composable
 fun HomeScreen(

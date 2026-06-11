@@ -29,12 +29,12 @@ import com.example.mybank.ui.theme.RedMain
 import com.example.mybank.ui.theme.SubtleBackground
 import com.example.mybank.ui.theme.SubtleText
 import com.example.mybank.ui.viewmodels.HistoryUiState
-import com.example.mybank.ui.viewmodels.HistoryViewModel
+import com.example.mybank.ui.viewmodels.TransactionViewModel
 
 @Composable
 fun HistoryScreen(
     navController: NavController,
-    historyViewModel: HistoryViewModel = viewModel()
+    transactionViewModel: TransactionViewModel
 ) {
     // KUNCI POIN 3: Cegah lompat ke login, paksa kembali ke Home
     BackHandler {
@@ -43,7 +43,8 @@ fun HistoryScreen(
         }
     }
 
-    val uiState by historyViewModel.uiState.collectAsState()
+    val transferState by transactionViewModel.transferState.collectAsState()
+    val uiState by transactionViewModel.historyState.collectAsState()
 
     Scaffold(
         floatingActionButton = {

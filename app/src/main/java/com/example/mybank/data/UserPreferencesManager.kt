@@ -11,6 +11,7 @@ class UserPreferencesManager(context: Context) {
         private const val KEY_HAS_ANSWERED_CONSENT = "has_answered_ai_consent"
         private const val KEY_USER_NAME = "user_name"
         private const val KEY_USER_ID = "user_id"
+        private const val KEY_ACCOUNT_NUMBER ="ACCOUNT_NUMBER"
         private const val KEY_ACCESS_TOKEN = "access_token"
     }
 
@@ -18,6 +19,10 @@ class UserPreferencesManager(context: Context) {
     var userId: Int
         get() = prefs.getInt(KEY_USER_ID, -1)
         set(value) = prefs.edit().putInt(KEY_USER_ID, value).apply()
+
+    var accountNumber: String
+        get() = prefs.getString(KEY_ACCOUNT_NUMBER, "") ?: ""
+        set(value) = prefs.edit().putString(KEY_ACCOUNT_NUMBER, value).apply()
 
     // Menyimpan access token
     var accessToken: String?
@@ -45,6 +50,7 @@ class UserPreferencesManager(context: Context) {
             .remove(KEY_ACCESS_TOKEN)
             .remove(KEY_USER_NAME)
             .remove(KEY_USER_ID)
+            .clear()
             .apply()
     }
 }

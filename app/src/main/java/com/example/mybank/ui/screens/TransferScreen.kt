@@ -7,6 +7,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -31,7 +32,7 @@ fun TransferScreen(
 ) {
     val context = LocalContext.current
     val prefsManager = remember { UserPreferencesManager(context) }
-    val uiState by transactionViewModel.uiState.collectAsState()
+    val uiState by transactionViewModel.transferState.collectAsState()
 
     // State untuk form
     var selectedType by remember { mutableStateOf(initialType) }
@@ -46,7 +47,7 @@ fun TransferScreen(
         when (uiState) {
             is TransferUiState.Success -> {
                 Toast.makeText(context, "Transaksi Berhasil!", Toast.LENGTH_SHORT).show()
-                transactionViewModel.resetState()
+                transactionViewModel.resetTransferState()
 
                 // Hancurkan form dan kembali ke Home
                 navController.popBackStack("home", inclusive = false)
@@ -54,7 +55,7 @@ fun TransferScreen(
             is TransferUiState.Error -> {
                 val errorMessage = (uiState as TransferUiState.Error).message
                 Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show()
-                transactionViewModel.resetState()
+                transactionViewModel.resetTransferState()
             }
             else -> {}
         }
@@ -151,21 +152,14 @@ fun TransferScreen(
                         destinationNumber
                     }
 
-                    // Rakit JSON Request
+                    // Rakit JSON Request Versi Baru
                     val request = TransactionRequest(
-                        accountId = prefsManager.userId,
+                        accountNumber = prefsManager.accountNumber, // Ambil dari UserPreferences
                         amount = amount.toDoubleOrNull() ?: 0.0,
+                        description = note.ifEmpty { initialType }, // Gunakan catatan, atau default tipe
+                        destinationAccountNumber = formattedDestination,
                         type = backendType,
-                        channel = "mobile",
-                        destinationAccountNumber = destinationNumber,
-                        destinationBankCode = "BCA", // Hardcode sementara
-                        destinationName = "User $destinationNumber", // Hardcode sementara
-                        description = initialType,
-                        note = note,
-                        merchantCategory = "-",
-                        merchantLocation = "-",
-                        merchantName = "-",
-                        pin = "123456" // Hardcode sementara
+                        pin = "123456" //-> sudah otomatis terisi dari default data class
                     )
 
                     transactionViewModel.submitTransaction(request)

@@ -112,6 +112,9 @@ fun HomeScreen(
     val isAiActive by personalizationViewModel.isAiActive.collectAsState()
     val userName by homeViewModel.userName.collectAsState()
 
+    val balance by homeViewModel.balance.collectAsState()
+    val formattedBalance = "Rp" + String.format("%,.0f", balance).replace(',', '.')
+
     val dynamicMenus by homeViewModel.dynamicMenus.collectAsState()
     val recommendations by recommendationViewModel.recommendations.collectAsState()
 
@@ -136,6 +139,7 @@ fun HomeScreen(
     // Ambil nama terbaru dari SharedPreferences saat masuk ke Home
     LaunchedEffect(Unit) {
         homeViewModel.refreshName()
+        homeViewModel.fetchAccountInfo()
         homeViewModel.fetchTopFeatures()
         recommendationViewModel.fetchRecommendations()
     }
@@ -296,7 +300,7 @@ fun HomeScreen(
                         ) {
                             // 1. Teks Saldo Dinamis
                             Text(
-                                text = if (isBalanceVisible) "Rp12.500.000,00" else "Rp************",
+                                text = if (isBalanceVisible) formattedBalance else "Rp ************",
                                 style = MaterialTheme.typography.titleLarge.copy(fontSize = 20.sp),
                                 color = PureWhite
                             )
@@ -485,10 +489,10 @@ fun HomeScreen(
                         horizontalArrangement = Arrangement.spacedBy(16.dp),
                         contentPadding = PaddingValues(horizontal = 24.dp)
                     ) {
-                        items(recommendations) { recommendations ->
+                        items(recommendations) { recommendation ->
                             MyBankPromoCard(
-                                title = recommendations.title ?: "Rekomendasi",
-                                description = recommendations.description ?: "",
+                                title = recommendation.title ?: "Rekomendasi",
+                                description = recommendation.description ?: "",
                                 hashtag = "#UntukAnda", // Bisa diubah tergantung type
                                 // Karena dari backend imageUrl kosong, kita pakai gambar default dari lokal dulu
                                 imageRes = R.drawable.img_flight_promo,
@@ -497,7 +501,7 @@ fun HomeScreen(
                                     .height(140.dp)
                                     .clickable {
                                         // LAPOR KE AI SAAT DIKLIK!
-                                        recommendationViewModel.trackPromoClick(recommendations.id)
+                                        recommendationViewModel.trackPromoClick(recommendation.id)
                                     }
                             )
                         }

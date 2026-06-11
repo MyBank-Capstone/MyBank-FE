@@ -4,19 +4,12 @@ import com.google.gson.annotations.SerializedName
 
 // --- REQUEST MODEL ---
 data class TransactionRequest(
-    @SerializedName("account_id") val accountId: Int,
+    @SerializedName("account_number") val accountNumber: String,
     @SerializedName("amount") val amount: Double,
-    @SerializedName("type") val type: String, // Misal: "TRANSFER", "TOP_UP"
-    @SerializedName("channel") val channel: String = "mobile",
-    @SerializedName("destination_account_number") val destinationAccountNumber: String,
-    @SerializedName("destination_bank_code") val destinationBankCode: String,
-    @SerializedName("destination_name") val destinationName: String,
     @SerializedName("description") val description: String,
-    @SerializedName("note") val note: String,
-    @SerializedName("merchant_category") val merchantCategory: String,
-    @SerializedName("merchant_location") val merchantLocation: String,
-    @SerializedName("merchant_name") val merchantName: String,
-    @SerializedName("pin") val pin: String
+    @SerializedName("destination_account_number") val destinationAccountNumber: String,
+    @SerializedName("pin") val pin: String = "123456",
+    @SerializedName("type") val type: String
 )
 
 // --- OBJEK UTAMA TRANSAKSI ---

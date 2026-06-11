@@ -16,12 +16,15 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.mybank.ui.screens.HomeScreen
 import com.example.mybank.ui.screens.LoginScreen
+import com.example.mybank.ui.screens.PromoDetailScreen
 import com.example.mybank.ui.screens.PromoScreen
 import com.example.mybank.ui.screens.RegisterScreen
 import com.example.mybank.ui.theme.MyBankTheme
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
+import com.example.mybank.data.models.Transaction
+import com.example.mybank.ui.screens.EditProfileScreen
 import com.example.mybank.ui.screens.HistoryScreen
 import com.example.mybank.ui.screens.NotificationScreen
 import com.example.mybank.ui.screens.ProfileScreen
@@ -30,6 +33,8 @@ import com.example.mybank.ui.viewmodels.AuthViewModel
 import com.example.mybank.ui.viewmodels.HomeViewModel
 import com.example.mybank.ui.viewmodels.PersonalizationViewModel
 import com.example.mybank.ui.viewmodels.RecommendationViewModel
+import com.example.mybank.ui.viewmodels.TransactionViewModel
+import com.example.mybank.ui.viewmodels.UserViewModel
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -51,6 +56,8 @@ class MainActivity : ComponentActivity() {
                     val homeViewModel: HomeViewModel = viewModel()
                     val personalizationViewModel: PersonalizationViewModel = viewModel()
                     val recommendationViewModel: RecommendationViewModel = viewModel()
+                    val transactionViewModel: TransactionViewModel = viewModel()
+                    val userViewModel: UserViewModel = viewModel()
 
                     NavHost(
                         navController = navController,
@@ -127,13 +134,30 @@ class MainActivity : ComponentActivity() {
 
                         composable("promo") {
                             PromoScreen(
+                                navController = navController,
                                 recommendationViewModel = recommendationViewModel,
+                                personalizationViewModel = personalizationViewModel,
                                 onBackClick = { navController.popBackStack() }
                             )
                         }
 
+                        composable(
+                            route = "promo_detail/{promoId}",
+                            arguments = listOf(navArgument("promoId") { type = NavType.IntType })
+                        ) { backStackEntry ->
+                            val promoId = backStackEntry.arguments?.getInt("promoId") ?: 0
+                            PromoDetailScreen(
+                                navController = navController,
+                                promoId = promoId,
+                                recommendationViewModel = recommendationViewModel
+                            )
+                        }
+
                         composable("mutasi") {
-                            HistoryScreen(navController = navController)
+                            HistoryScreen(
+                                navController = navController,
+                                transactionViewModel = transactionViewModel
+                            )
                         }
 
                         composable("notifikasi") {
@@ -143,7 +167,15 @@ class MainActivity : ComponentActivity() {
                         composable("profile") {
                             ProfileScreen(
                                 navController = navController,
-                                personalizationViewModel = personalizationViewModel
+                                personalizationViewModel = personalizationViewModel,
+                                userViewModel = userViewModel
+                            )
+                        }
+
+                        composable("edit_profile") {
+                            EditProfileScreen(
+                                navController = navController,
+                                userViewModel = userViewModel
                             )
                         }
 

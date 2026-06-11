@@ -23,6 +23,8 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
     val userName: StateFlow<String> = _userName
     private val _dynamicMenus = MutableStateFlow<List<MenuFeature>>(emptyList())
     val dynamicMenus: StateFlow<List<MenuFeature>> = _dynamicMenus
+    private val _balance = MutableStateFlow(0.0)
+    val balance: StateFlow<Double> = _balance
 
     fun refreshName() {
         _userName.value = prefsManager.userName ?: "User"
@@ -37,6 +39,38 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
     fun logout() {
         prefsManager.clearSession()
         ApiConfig.token = ""
+    }
+
+    fun fetchAccountInfo() {
+        viewModelScope.launch {
+            try {
+                val response = ApiConfig.accountService.getAccounts()
+                if (response.isSuccessful) {
+                    val accounts = response.body()?.data
+
+                    // CCTV 1: Cek apakah data list-nya masuk atau kosong
+                    android.util.Log.d("DEBUG_SALDO", "List Account: $accounts")
+
+                    if (!accounts.isNullOrEmpty()) {
+                        val mainAccount = accounts[0]
+
+                        // CCTV 2: Cek nominal saldonya
+                        android.util.Log.d("DEBUG_SALDO", "Nominal Saldo: ${mainAccount.balance}")
+
+                        _balance.value = mainAccount.balance ?: 0.0
+                        prefsManager.accountNumber = mainAccount.accountNumber ?: ""
+                    } else {
+                        android.util.Log.e("DEBUG_SALDO", "List account kosong [] ! Berarti user ini belum punya rekening.")
+                    }
+                } else {
+                    // CCTV 3: Cek kalau API nolak (misal 401 Unauthorized)
+                    val errorBody = response.errorBody()?.string()
+                    android.util.Log.e("DEBUG_SALDO", "Error API: ${response.code()} - $errorBody")
+                }
+            } catch (e: Exception) {
+                android.util.Log.e("DEBUG_SALDO", "Gagal fetch, mungkin koneksi atau model JSON salah", e)
+            }
+        }
     }
 
     fun fetchTopFeatures() {
